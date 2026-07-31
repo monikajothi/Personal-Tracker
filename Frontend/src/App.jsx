@@ -35,6 +35,7 @@ function LoadingScreen() {
 const NAV_IDS = ["home", "calendar", "insights", "journal", "garden", "settings"];
 
 function TrackerApp() {
+  const { user } = useAuth();
   const { entries, loaded: entriesLoaded, saveCategory, toggleHabit, getHistory } = useEntries(true);
   const { settings, loaded: settingsLoaded, saveSettings } = useSettings(true);
 
@@ -49,6 +50,8 @@ function TrackerApp() {
   const t = todayStr();
   const editingDay = selectedDay || t;
   const dayEntry = entries[editingDay] || {};
+  const isFemaleUser = user?.gender === "female";
+  const cycleEnabled = isFemaleUser && settings.cycleEnabled;
 
   const essentials = settings.essentials.filter((id) => DEFAULT_CATEGORIES.some((c) => c.id === id));
   const todayEntry = entries[t] || {};
@@ -96,9 +99,9 @@ function TrackerApp() {
           <Dashboard theme={theme} entries={entries} settings={settings} animationsOn={settings.animationsOn} onOpenCategory={openCategory} onOpenHabit={openHabit} />
         )}
         {tab === "calendar" && (
-          <CalendarView theme={theme} entries={entries} essentials={essentials} onSelectDay={openDay} cycleEnabled={settings.cycleEnabled} />
+          <CalendarView theme={theme} entries={entries} essentials={essentials} onSelectDay={openDay} cycleEnabled={cycleEnabled} />
         )}
-        {tab === "insights" && <AnalyticsView theme={theme} entries={entries} cycleEnabled={settings.cycleEnabled} />}
+        {tab === "insights" && <AnalyticsView theme={theme} entries={entries} cycleEnabled={cycleEnabled} />}
         {tab === "journal" && <JournalView theme={theme} entries={entries} onSave={saveCategory} />}
         {tab === "garden" && <GardenView theme={theme} entries={entries} animationsOn={settings.animationsOn} />}
         {tab === "settings" && <SettingsView theme={theme} settings={settings} onChange={saveSettings} />}

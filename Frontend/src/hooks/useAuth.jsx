@@ -29,8 +29,8 @@ export function AuthProvider({ children }) {
     persistSession(token, u);
   }, []);
 
-  const signup = useCallback(async (name, email, password) => {
-    const { token, user: u } = await authApi.signup(name, email, password);
+  const signup = useCallback(async (name, email, password, gender) => {
+    const { token, user: u } = await authApi.signup(name, email, password, gender);
     persistSession(token, u);
   }, []);
 

@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { Panel, SectionTitle } from "../components/ui.jsx";
 import MonthWrapModal from "../components/MonthWrapModal.jsx";
 import { DEFAULT_CATEGORIES, todayStr, addDays, fmtNiceDate, isCategoryDone } from "../constants.js";
+import { useAuth } from "../hooks/useAuth.jsx";
 
 // Streak counts consecutive tracked days, but forgives one missed day per
 // every 7 tracked days (a "streak freeze") so one bad day doesn't erase
@@ -43,17 +44,31 @@ function useLastNDays(entries, n) {
 }
 
 export default function Dashboard({ theme, entries, settings, onOpenCategory, onOpenHabit, animationsOn }) {
+  const { user } = useAuth();
   const [wrapOpen, setWrapOpen] = useState(false);
   const t = todayStr();
   const todayEntry = entries[t] || {};
-  const cats = DEFAULT_CATEGORIES.filter((c) => c.id !== "cycle" || settings.cycleEnabled);
+  const cycleVisible = user?.gender === "female" && settings.cycleEnabled;
+  const cats = DEFAULT_CATEGORIES.filter((c) => c.id !== "cycle" || cycleVisible);
   const essentials = settings.essentials.filter((id) => cats.some((c) => c.id === id));
   const doneCount = essentials.filter((id) => isCategoryDone(id, todayEntry[id])).length;
   const pct = essentials.length ? Math.round((doneCount / essentials.length) * 100) : 0;
   const streak = useMemo(() => computeStreak(entries), [entries]);
   const hour = new Date().getHours();
-  const greeting = hour < 5 ? "Still up, Moni? 🌙" : hour < 12 ? "Good morning, Moni 🌤️" : hour < 17 ? "Good afternoon, Moni ☀️" : hour < 21 ? "Good evening, Moni 🌆" : "Winding down, Moni? 🌙";
+  // const name = user?.name?.trim() || "there";
+  const fullName = user?.name?.trim();
+  const name = fullName ? fullName.split(/\s+/)[0] : "there";
 
+  const greeting =
+    hour < 5
+      ? `Still up, ${name}? 🌙`
+      : hour < 12
+      ? `Good morning, ${name} 🌤️`
+      : hour < 17
+      ? `Good afternoon, ${name} ☀️`
+      : hour < 21
+      ? `Good evening, ${name} 🌆`
+      : `Winding down, ${name}? 🌙`;
   return (
     <div>
       <div style={{ marginBottom: 18 }}>

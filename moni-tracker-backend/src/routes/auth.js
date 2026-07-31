@@ -14,12 +14,15 @@ function signToken(user) {
 
 router.post("/signup", async (req, res) => {
   try {
-    const { name, email, password } = req.body;
-    if (!name || !email || !password) {
-      return res.status(400).json({ error: "name, email, and password are required" });
+    const { name, email, password, gender } = req.body;
+    if (!name || !email || !password || !gender) {
+      return res.status(400).json({ error: "name, email, password, and gender are required" });
     }
     if (password.length < 8) {
       return res.status(400).json({ error: "Password must be at least 8 characters" });
+    }
+    if (!["female", "male", "non-binary", "prefer-not-to-say"].includes(gender)) {
+      return res.status(400).json({ error: "Invalid gender value" });
     }
 
     const existing = await User.findOne({ email: email.toLowerCase() });
@@ -28,11 +31,16 @@ router.post("/signup", async (req, res) => {
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
-    const user = await User.create({ name, email: email.toLowerCase(), passwordHash });
+    const user = await User.create({
+      name,
+      email: email.toLowerCase(),
+      passwordHash,
+      gender,
+    });
     await Settings.create({ userId: user._id });
 
     const token = signToken(user);
-    res.status(201).json({ token, user: { id: user._id, name: user.name, email: user.email } });
+    res.status(201).json({ token, user: { id: user._id, name: user.name, email: user.email, gender: user.gender } });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Signup failed" });
@@ -53,7 +61,7 @@ router.post("/login", async (req, res) => {
     if (!ok) return res.status(401).json({ error: "Invalid email or password" });
 
     const token = signToken(user);
-    res.json({ token, user: { id: user._id, name: user.name, email: user.email } });
+    res.json({ token, user: { id: user._id, name: user.name, email: user.email, gender: user.gender } });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Login failed" });

@@ -1,12 +1,15 @@
 import React from "react";
 import { DEFAULT_CATEGORIES, isCategoryDone, fmtNiceDate } from "../constants.js";
+import { useAuth } from "../hooks/useAuth.jsx";
 
 // Bottom-sheet listing every category for one specific date (not just today).
 // Tapping a card opens the existing CategoryModal for that category, scoped
 // to this date — closing it returns here instead of losing the date.
 export default function DayDetailModal({ theme, date, entries, settings, onOpenCategory, onToggleHabit, onClose }) {
+  const { user } = useAuth();
   const dayEntry = entries[date] || {};
-  const cats = DEFAULT_CATEGORIES.filter((c) => c.id !== "cycle" || settings.cycleEnabled);
+  const cycleVisible = user?.gender === "female" && settings.cycleEnabled;
+  const cats = DEFAULT_CATEGORIES.filter((c) => c.id !== "cycle" || cycleVisible);
 
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(30,20,15,0.35)", zIndex: 10000, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>

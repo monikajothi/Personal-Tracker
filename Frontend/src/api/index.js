@@ -1,7 +1,7 @@
 import { api } from "./client.js";
 
 export const authApi = {
-  signup: (name, email, password) => api.post("/auth/signup", { name, email, password }, { auth: false }),
+  signup: (name, email, password, gender) => api.post("/auth/signup", { name, email, password, gender }, { auth: false }),
   login: (email, password) => api.post("/auth/login", { email, password }, { auth: false }),
 };
 

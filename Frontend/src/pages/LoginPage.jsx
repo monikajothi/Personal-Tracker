@@ -11,6 +11,7 @@ export default function LoginPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [gender, setGender] = useState("female");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -20,7 +21,7 @@ export default function LoginPage() {
     setBusy(true);
     try {
       if (mode === "login") await login(email, password);
-      else await signup(name, email, password);
+      else await signup(name, email, password, gender);
     } catch (err) {
       setError(err.message || "Something went wrong");
     } finally {
@@ -39,7 +40,15 @@ export default function LoginPage() {
 
         <form onSubmit={submit} style={{ display: "grid", gap: 12 }}>
           {mode === "signup" && (
-            <input required placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} style={inputStyle(theme)} />
+            <>
+              <input required placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} style={inputStyle(theme)} />
+              <select required value={gender} onChange={(e) => setGender(e.target.value)} style={inputStyle(theme)}>
+                <option value="female">Female</option>
+                <option value="male">Male</option>
+                <option value="non-binary">Non-binary</option>
+                <option value="prefer-not-to-say">Prefer not to say</option>
+              </select>
+            </>
           )}
           <input required type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle(theme)} />
           <input required type="password" placeholder="Password (min 8 characters)" value={password} onChange={(e) => setPassword(e.target.value)} style={inputStyle(theme)} />

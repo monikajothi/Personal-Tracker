@@ -7,6 +7,7 @@ import { useAuth } from "../hooks/useAuth.jsx";
 export default function SettingsView({ theme, settings, onChange }) {
   const { user, logout } = useAuth();
   const [newHabit, setNewHabit] = useState("");
+  const cycleVisible = user?.gender === "female";
 
   const addHabit = () => {
     if (!newHabit.trim()) return;
@@ -63,19 +64,61 @@ export default function SettingsView({ theme, settings, onChange }) {
       </Panel>
 
       <Panel theme={theme} style={{ marginBottom: 14 }}>
-        <div style={{ fontWeight: 800, marginBottom: 10 }}>⭐ Daily essentials (count toward streak)</div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-          {DEFAULT_CATEGORIES.map((c) => (
-            <Chip key={c.id} theme={theme} active={settings.essentials.includes(c.id)} onClick={() => {
-              const has = settings.essentials.includes(c.id);
-              onChange({ ...settings, essentials: has ? settings.essentials.filter((x) => x !== c.id) : [...settings.essentials, c.id] });
-            }}>{c.emoji} {c.label}</Chip>
-          ))}
-        </div>
-        <div style={{ marginTop: 12 }}>
-          <Toggle on={settings.cycleEnabled} onClick={() => onChange({ ...settings, cycleEnabled: !settings.cycleEnabled })} theme={theme} label="Show cycle tracker" />
-        </div>
-      </Panel>
+  <div
+    style={{
+      fontWeight: 800,
+      marginBottom: 10,
+    }}
+  >
+    ⭐ Daily essentials (count toward streak)
+  </div>
+
+  <div
+    style={{
+      display: "flex",
+      flexWrap: "wrap",
+      gap: 8,
+    }}
+  >
+    {DEFAULT_CATEGORIES
+      .filter((c) => c.id !== "cycle" || cycleVisible)
+      .map((c) => (
+        <Chip
+          key={c.id}
+          theme={theme}
+          active={settings.essentials.includes(c.id)}
+          onClick={() => {
+            const has = settings.essentials.includes(c.id);
+
+            onChange({
+              ...settings,
+              essentials: has
+                ? settings.essentials.filter((x) => x !== c.id)
+                : [...settings.essentials, c.id],
+            });
+          }}
+        >
+          {c.emoji} {c.label}
+        </Chip>
+      ))}
+  </div>
+
+  {cycleVisible && (
+    <div style={{ marginTop: 12 }}>
+      <Toggle
+        on={settings.cycleEnabled}
+        onClick={() =>
+          onChange({
+            ...settings,
+            cycleEnabled: !settings.cycleEnabled,
+          })
+        }
+        theme={theme}
+        label="Show cycle tracker"
+      />
+    </div>
+  )}
+</Panel>
 
       <Panel theme={theme}>
         <div style={{ fontWeight: 800, marginBottom: 10 }}>🌿 Custom habits</div>

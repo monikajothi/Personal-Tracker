@@ -186,8 +186,8 @@ export default function JournalView({
 
     try {
       const dataUrl = await resizeImageFile(file, {
-        maxWidth: 900,
-        quality: 0.75,
+        maxWidth: 700,
+        quality: 0.65,
       });
 
       console.log(
@@ -195,7 +195,7 @@ export default function JournalView({
         Math.round(dataUrl.length / 1024),
         "KB"
       );
-
+      
       setPhoto(dataUrl);
 
       await saveNow({

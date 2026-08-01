@@ -51,9 +51,20 @@ router.get("/:date/history", async (req, res) => {
 // PUT /api/entries/:date  body: { category: "sleep", data: {...} }
 // Upserts the day's entry, merges the one category, and snapshots the
 // previous state into history so nothing is silently lost.
+
 router.put("/:date", async (req, res) => {
+  console.log("📷 Save request received");
   try {
     const { category, data } = req.body;
+
+    console.log({
+      category,
+      hasPhoto: !!data?.photo,
+      photoSizeKB: data?.photo
+        ? Math.round(data.photo.length / 1024)
+        : 0,
+    });
+
     if (!category || typeof data !== "object") {
       return res.status(400).json({ error: "Body must include { category, data }" });
     }

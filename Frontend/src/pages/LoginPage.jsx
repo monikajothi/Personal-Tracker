@@ -33,7 +33,7 @@ export default function LoginPage() {
     <div className="mwt" style={{ minHeight: "100vh", background: theme.bg, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
       <div style={{ width: "100%", maxWidth: 380, background: theme.paper, border: `1px solid ${theme.border}`, borderRadius: 24, padding: 28 }}>
         <div style={{ fontSize: 40, textAlign: "center", marginBottom: 4 }}>🌷</div>
-        <h1 className="font-display" style={{ textAlign: "center", fontSize: 22, margin: "0 0 4px", color: theme.ink }}>Moni's Wellness Tracker</h1>
+        <h1 className="font-display" style={{ textAlign: "center", fontSize: 22, margin: "0 0 4px", color: theme.ink }}>Wellness Tracker</h1>
         <p style={{ textAlign: "center", fontSize: 13, opacity: 0.6, margin: "0 0 22px" }}>
           {mode === "login" ? "Welcome back 🌸" : "Let's plant your first seed 🌱"}
         </p>

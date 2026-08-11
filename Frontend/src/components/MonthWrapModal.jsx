@@ -1,5 +1,6 @@
 import React, { useRef, useState } from "react";
 import { MOODS } from "../constants.js";
+import { useAuth } from "../hooks/useAuth.jsx";
 
 function computeMonthStats(entries, year, month) {
   const prefix = `${year}-${String(month + 1).padStart(2, "0")}`;
@@ -24,11 +25,13 @@ function computeMonthStats(entries, year, month) {
 }
 
 export default function MonthWrapModal({ theme, entries, onClose }) {
+  const { user } = useAuth();
   const now = new Date();
   const [monthOffset, setMonthOffset] = useState(0);
   const target = new Date(now.getFullYear(), now.getMonth() + monthOffset, 1);
   const stats = computeMonthStats(entries, target.getFullYear(), target.getMonth());
   const monthLabel = target.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+  const firstName = user?.name?.trim()?.split(/\s+/)[0] || "Moni";
 
   const cardRef = useRef(null);
   const [downloading, setDownloading] = useState(false);
@@ -63,7 +66,7 @@ export default function MonthWrapModal({ theme, entries, onClose }) {
           background: `linear-gradient(160deg, ${theme.accent} 0%, ${theme.accent2} 100%)`,
           position: "relative", overflow: "hidden",
         }}>
-          <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: 1.5, opacity: 0.85, textTransform: "uppercase" }}>Moni's Wellness Wrap</div>
+          <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: 1.5, opacity: 0.85, textTransform: "uppercase" }}>{firstName}'s Wellness Wrap</div>
           <div className="font-display" style={{ fontSize: 26, fontWeight: 600, margin: "6px 0 22px" }}>{monthLabel}</div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 18 }}>

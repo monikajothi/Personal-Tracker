@@ -15,7 +15,7 @@ import {
 import CategoryModal from "./components/CategoryModal.jsx";
 import DayDetailModal from "./components/DayDetailModal.jsx";
 import MicroCelebration from "./components/MicroCelebration.jsx";
-
+import SharedJarPage from "./pages/SharedJarPage.jsx";
 import { AuthProvider, useAuth } from "./hooks/useAuth.jsx";
 import { useEntries } from "./hooks/useEntries.js";
 import { useSettings } from "./hooks/useSettings.js";
@@ -340,7 +340,6 @@ function TrackerApp() {
           : ""
       }`}
       style={{
-        minHeight: "100vh",
         background: theme.bg,
         color: theme.ink,
         position: "relative",
@@ -410,11 +409,7 @@ function TrackerApp() {
           )}
 
           {tab === "journal" && (
-            <JournalView
-              theme={theme}
-              entries={entries}
-              onSave={saveCategory}
-            />
+            <JournalView />
           )}
 
           {tab === "garden" && (
@@ -537,6 +532,17 @@ function TrackerApp() {
    ========================================================= */
 
 export default function App() {
+  const path =
+    typeof window !== "undefined"
+      ? window.location.pathname
+      : "/";
+
+  const match = path.match(/^\/share\/jar\/([^/]+)/);
+
+  if (match) {
+    return <SharedJarPage token={match[1]} />;
+  }
+
   return (
     <AuthProvider>
       <AppShell />

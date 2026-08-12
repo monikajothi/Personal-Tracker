@@ -30,7 +30,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="mwt" style={{ minHeight: "100vh", background: theme.bg, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+    <div className="mwt" style={{ background: theme.bg, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, minHeight: "100%" }}>
       <div style={{ width: "100%", maxWidth: 380, background: theme.paper, border: `1px solid ${theme.border}`, borderRadius: 24, padding: 28 }}>
         <div style={{ fontSize: 40, textAlign: "center", marginBottom: 4 }}>🌷</div>
         <h1 className="font-display" style={{ textAlign: "center", fontSize: 22, margin: "0 0 4px", color: theme.ink }}>Wellness Tracker</h1>

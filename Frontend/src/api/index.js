@@ -1,4 +1,4 @@
-import { api } from "./client.js";
+import { api, BASE_URL, getToken } from "./client.js";
 
 export const authApi = {
   signup: (name, email, password, gender) => api.post("/auth/signup", { name, email, password, gender }, { auth: false }),
@@ -9,6 +9,7 @@ export const entriesApi = {
   range: (start, end) => api.get(`/entries?start=${start}&end=${end}`),
   get: (date) => api.get(`/entries/${date}`),
   history: (date) => api.get(`/entries/${date}/history`),
+  journalRecent: () => api.get("/entries/journal/recent"),
   journalHistory: () => api.get(`/entries/journal-history`),
   save: (date, category, data) => api.put(`/entries/${date}`, { category, data }),
 };

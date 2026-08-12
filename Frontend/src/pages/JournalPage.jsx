@@ -1,619 +1,2009 @@
-import React, { useState, useEffect, useRef } from "react";
-import {
-  Panel,
-  SectionTitle,
-  inputStyle,
-} from "../components/ui.jsx";
-import {
-  JOURNAL_PROMPTS,
-  todayStr,
-  fmtNiceDate,
-} from "../constants.js";
-import { entriesApi } from "../api/index.js";
+import React, {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+
+import { SectionTitle } from "../components/ui.jsx";
+import { starsApi } from "../api/index.js";
 import { resizeImageFile } from "../utils/image.js";
 
-export default function JournalView({
-  theme,
-  entries,
-  onSave,
+const STAR_COLORS = [
+  {
+    id: "pink",
+    color: "#ef9caf",
+    soft: "#fbe1e7",
+    label: "Pink",
+    emoji: "🌸",
+  },
+  {
+    id: "sage",
+    color: "#a9c6a2",
+    soft: "#e4eee1",
+    label: "Sage",
+    emoji: "🌿",
+  },
+  {
+    id: "blue",
+    color: "#94bfe1",
+    soft: "#e1eef8",
+    label: "Blue",
+    emoji: "💙",
+  },
+  {
+    id: "yellow",
+    color: "#e6c86f",
+    soft: "#faf1c9",
+    label: "Yellow",
+    emoji: "💛",
+  },
+  {
+    id: "purple",
+    color: "#bca6d4",
+    soft: "#eee5f5",
+    label: "Purple",
+    emoji: "💜",
+  },
+];
+
+const PROMPTS = [
+  "What made today a little better?",
+  "What made you smile today?",
+  "What are you proud of today?",
+  "What would you like to remember from today?",
+  "Who made your day a little nicer?",
+  "What is one tiny thing you're grateful for?",
+  "What moment would you happily experience again?",
+];
+
+function getColor(id) {
+  return (
+    STAR_COLORS.find((c) => c.id === id) ||
+    STAR_COLORS[0]
+  );
+}
+
+function formatDate(date) {
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(date));
+}
+
+function PaperStar({
+  color = "pink",
+  style = {},
+  className = "",
+  onClick,
 }) {
-  const t = todayStr();
+  const c = getColor(color);
 
-  const prompt =
-    JOURNAL_PROMPTS[
-      new Date().getDate() % JOURNAL_PROMPTS.length
-    ];
-
-  /* --------------------------------
-     State
-  -------------------------------- */
-
-  const [text, setText] = useState(
-    entries[t]?.journal?.text || ""
+  return (
+    <span
+      className={`paper-star ${className}`}
+      onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(event) => {
+        if (
+          event.key === "Enter" ||
+          event.key === " "
+        ) {
+          event.preventDefault();
+          onClick?.(event);
+        }
+      }}
+      style={{
+        ...style,
+        "--star-color": c.color,
+        "--star-soft": c.soft,
+      }}
+      aria-label="Memory star"
+    >
+      <span>★</span>
+    </span>
   );
+}
 
-  const [photo, setPhoto] = useState(
-    entries[t]?.journal?.photo || null
+function TornPaper({
+  children,
+  className = "",
+  style = {},
+  tape = true,
+  tapeColor = "#d9ad5b",
+}) {
+  return (
+    <div
+      className={`torn-paper ${className}`}
+      style={style}
+    >
+      <div className="torn-paper-texture" />
+
+      {tape && (
+        <div
+          className="torn-paper-tape"
+          style={{
+            background: tapeColor,
+          }}
+        />
+      )}
+
+      <div className="torn-paper-content">
+        {children}
+      </div>
+    </div>
   );
+}
 
-  const [uploading, setUploading] = useState(false);
-  const [saveStatus, setSaveStatus] = useState("saved");
-  const [journalHistory, setJournalHistory] = useState({});
+function Jar({
+  stars,
+  onTap,
+  dropping,
+}) {
+  const visibleStars = stars.slice(0, 24);
+
+  const positions = [
+    [21, 67, -12],
+    [43, 72, 8],
+    [65, 67, -6],
+    [31, 53, 14],
+    [54, 52, -15],
+    [73, 50, 10],
+    [20, 43, 8],
+    [45, 39, -10],
+    [65, 39, 14],
+    [35, 29, -5],
+    [56, 28, 9],
+    [74, 31, -12],
+    [28, 20, 15],
+    [47, 19, -8],
+    [66, 21, 6],
+    [38, 12, -14],
+    [57, 11, 10],
+    [75, 14, -5],
+    [25, 59, 5],
+    [58, 61, -10],
+    [37, 44, 11],
+    [70, 42, -8],
+    [48, 61, 5],
+    [62, 26, -10],
+  ];
+
+  return (
+    <div
+      className="jar-wrapper"
+      onClick={onTap}
+      onKeyDown={(event) => {
+        if (
+          event.key === "Enter" ||
+          event.key === " "
+        ) {
+          event.preventDefault();
+          onTap?.(event);
+        }
+      }}
+      role="button"
+      tabIndex={0}
+      aria-label="Open a random memory"
+      style={{ cursor: "pointer" }}
+    >
+      <div className="jar-glow" />
+
+      <div className="jar-lid">
+        <div className="jar-lid-lines" />
+      </div>
+
+      <div className="jar-body">
+        <div className="jar-shine" />
+
+        {visibleStars.map((star, index) => {
+          const p = positions[index % positions.length];
+
+          return (
+            <PaperStar
+              key={star._id}
+              color={star.color}
+              className={dropping && index === 0 ? "star-drop" : ""}
+              style={{
+                left: `${p[0]}%`,
+                bottom: `${p[1]}%`,
+                transform: `rotate(${p[2]}deg)`,
+              }}
+            />
+          );
+        })}
+
+        {stars.length === 0 && (
+          <div className="empty-jar-heart">
+            ✦
+          </div>
+        )}
+      </div>
+
+      <div className="jar-base" />
+    </div>
+  );
+}
+
+function AddStarModal({
+  onClose,
+  onCreated,
+}) {
+  const [text, setText] = useState("");
+  const [color, setColor] = useState("pink");
+  const [photo, setPhoto] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   const fileRef = useRef(null);
-  const saveTimerRef = useRef(null);
-  const saveSequenceRef = useRef(0);
 
-  // Prevent server/state updates from overwriting text
-  // while the user is actively editing.
-  const editingRef = useRef(false);
-
-  // Lets us populate the journal when entries initially
-  // arrive asynchronously.
-  const initializedDateRef = useRef(null);
-
-  /* --------------------------------
-     Sync data from entries
-  -------------------------------- */
-
-  useEffect(() => {
-    const journal = entries[t]?.journal;
-
-    // Date changed → load that day's journal.
-    if (initializedDateRef.current !== t) {
-      initializedDateRef.current = t;
-
-      setText(journal?.text || "");
-      setPhoto(journal?.photo || null);
-      setSaveStatus("saved");
-      editingRef.current = false;
-
-      return;
-    }
-
-    // Entries may arrive from the backend AFTER this
-    // component has mounted.
-    //
-    // Only hydrate local state if the user hasn't started
-    // editing, otherwise an API refresh could overwrite
-    // what they're typing.
-    if (!editingRef.current && journal) {
-      setText(journal.text || "");
-      setPhoto(journal.photo || null);
-    }
-  }, [t, entries]);
-
-  /* --------------------------------
-     Fetch the full journal history from the API,
-     independently from the 120-day entries cache.
-  -------------------------------- */
-
-  useEffect(() => {
-    let cancelled = false;
-
-    entriesApi.journalHistory()
-      .then((history) => {
-        if (!cancelled) {
-          setJournalHistory(history || {});
-        }
-      })
-      .catch((err) => {
-        console.error("Failed to load journal history:", err);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  /* --------------------------------
-     Cleanup autosave timer
-  -------------------------------- */
-
-  useEffect(() => {
-    return () => {
-      if (saveTimerRef.current) {
-        clearTimeout(saveTimerRef.current);
-      }
-    };
-  }, []);
-
-  /* --------------------------------
-     Save immediately
-  -------------------------------- */
-
-  const saveNow = async (patch = {}) => {
-    const myRound = ++saveSequenceRef.current;
-
-    try {
-      setSaveStatus("saving");
-
-      await onSave(t, "journal", {
-        text,
-        photo,
-        prompt,
-        ...patch,
-      });
-
-      // Ignore stale completion results.
-      if (myRound !== saveSequenceRef.current) {
-        return false;
-      }
-
-      editingRef.current = false;
-      setSaveStatus("saved");
-
-      return true;
-    } catch (err) {
-      console.error("Journal save failed:", err);
-
-      setSaveStatus("error");
-
-      return false;
-    }
-  };
-
-  /* --------------------------------
-     Text autosave
-  -------------------------------- */
-
-  const handleTextChange = (e) => {
-    const nextText = e.target.value;
-
-    editingRef.current = true;
-
-    setText(nextText);
-    setSaveStatus("saving");
-
-    // Restart timer every time the user types.
-    if (saveTimerRef.current) {
-      clearTimeout(saveTimerRef.current);
-    }
-
-    saveTimerRef.current = setTimeout(async () => {
-      const myRound = ++saveSequenceRef.current;
-
-      try {
-        await onSave(t, "journal", {
-          text: nextText,
-          photo,
-          prompt,
-        });
-
-        if (myRound !== saveSequenceRef.current) {
-          return;
-        }
-
-        editingRef.current = false;
-        setSaveStatus("saved");
-      } catch (err) {
-        console.error("Journal autosave failed:", err);
-
-        setSaveStatus("error");
-      }
-    }, 700);
-  };
-
-  /* --------------------------------
-     Save immediately on blur too
-  -------------------------------- */
-
-  const handleBlur = async () => {
-    // Cancel pending autosave because we're
-    // saving immediately now.
-    if (saveTimerRef.current) {
-      clearTimeout(saveTimerRef.current);
-      saveTimerRef.current = null;
-    }
-
-    await saveNow({
-      text,
-    });
-  };
-
-  /* --------------------------------
-     Photo upload
-  -------------------------------- */
-
-  const handlePhoto = async (e) => {
-    const file = e.target.files?.[0];
+  const handlePhoto = (event) => {
+    const file = event.target.files?.[0];
 
     if (!file) return;
 
-    setUploading(true);
-    editingRef.current = true;
+    if (file.size > 10 * 1024 * 1024) {
+      setError("Please choose a photo smaller than 10 MB.");
+      return;
+    }
+
+    setPhoto(file);
+    setPreview(URL.createObjectURL(file));
+  };
+
+  const submit = async () => {
+    if (!text.trim()) {
+      setError("Write one little memory first 🌱");
+      return;
+    }
 
     try {
-      const dataUrl = await resizeImageFile(file, {
-        maxWidth: 700,
-        quality: 0.65,
-      });
+      setSaving(true);
+      setError("");
 
-      console.log(
-        "Journal image size:",
-        Math.round(dataUrl.length / 1024),
-        "KB"
-      );
-      
-      setPhoto(dataUrl);
+      let photoUrl = null;
 
-      await saveNow({
-        photo: dataUrl,
-      });
-    } catch (err) {
-      console.error("Photo upload failed:", err);
-
-      setSaveStatus("error");
-    } finally {
-      setUploading(false);
-
-      if (e.target) {
-        e.target.value = "";
+      if (photo) {
+        photoUrl = await resizeImageFile(photo, {
+          maxWidth: 1200,
+          quality: 0.72,
+        });
       }
+
+      const star = await starsApi.create({
+        text: text.trim(),
+        color,
+        photoUrl,
+      });
+
+      onCreated(star);
+    } catch (err) {
+      console.error(err);
+      setError(
+        err.message || "Couldn't save your star."
+      );
+    } finally {
+      setSaving(false);
     }
   };
 
-  /* --------------------------------
-     Remove photo
-  -------------------------------- */
-
-  const removePhoto = async () => {
-    editingRef.current = true;
-
-    setPhoto(null);
-
-    await saveNow({
-      photo: null,
-    });
-  };
-
-  /* --------------------------------
-     Recent journal entries
-  -------------------------------- */
-
-  const recentSource =
-    Object.keys(journalHistory || {}).length > 0
-      ? journalHistory
-      : entries;
-
-  const recent = Object.entries(recentSource)
-    .filter(
-      ([, value]) =>
-        value?.journal?.text ||
-        value?.journal?.photo
-    )
-    .sort((a, b) =>
-      a[0] < b[0] ? 1 : -1
-    );
-
-  /* --------------------------------
-     UI
-  -------------------------------- */
-
   return (
-    <div>
-      <SectionTitle
-        theme={theme}
-        sub="Completely optional — skip any day."
-      >
-        📝 Journal
-      </SectionTitle>
-
-      {/* Today's journal */}
-      <Panel
-        theme={theme}
-        style={{
-          marginBottom: 16,
-        }}
-      >
-        {/* Prompt */}
-
-        <div
-          className="font-hand"
-          style={{
-            fontSize: 22,
-            color: theme.accent,
-            marginBottom: 10,
-          }}
+    <div className="star-overlay">
+      <TornPaper className="paper-modal torn-paper-modal">
+        <button
+          className="paper-close"
+          onClick={onClose}
         >
-          {prompt}
+          ×
+        </button>
+
+        <div className="paper-title">
+          add a star
         </div>
 
-        {/* Photo */}
+        <div className="paper-prompt">
+          {PROMPTS[
+            new Date().getDate() %
+              PROMPTS.length
+          ]}
+        </div>
 
-        {photo ? (
-          <div
-            style={{
-              position: "relative",
-              marginBottom: 12,
-            }}
-          >
-            <img
-              src={photo}
-              alt="Journal"
+        <textarea
+          autoFocus
+          value={text}
+          onChange={(e) =>
+            setText(e.target.value)
+          }
+          maxLength={1000}
+          placeholder="Write a little moment..."
+          className="star-textarea"
+        />
+
+        <div className="character-count">
+          {text.length}/1000
+        </div>
+
+        <div className="color-title">
+          choose your star
+        </div>
+
+        <div className="color-row">
+          {STAR_COLORS.map((c) => (
+            <button
+              key={c.id}
+              onClick={() => setColor(c.id)}
+              className={`color-choice ${
+                color === c.id ? "selected" : ""
+              }`}
               style={{
-                width: "100%",
-                borderRadius: 14,
-                display: "block",
-                maxHeight: 260,
-                objectFit: "cover",
+                "--choice": c.color,
               }}
+            >
+              ★
+            </button>
+          ))}
+        </div>
+
+        {preview && (
+          <div className="photo-preview">
+            <img
+              src={preview}
+              alt=""
             />
 
             <button
-              type="button"
-              onClick={removePhoto}
-              aria-label="Remove journal photo"
-              style={{
-                position: "absolute",
-                top: 8,
-                right: 8,
-
-                width: 28,
-                height: 28,
-
-                display: "grid",
-                placeItems: "center",
-
-                borderRadius: "50%",
-                border: "none",
-
-                background: "rgba(0,0,0,0.5)",
-                color: "#fff",
-
-                fontSize: 14,
-                cursor: "pointer",
+              onClick={() => {
+                setPhoto(null);
+                setPreview(null);
               }}
             >
-              ✕
+              ×
             </button>
           </div>
-        ) : (
-          <button
-            type="button"
-            onClick={() =>
-              fileRef.current?.click()
-            }
-            disabled={uploading}
-            style={{
-              width: "100%",
-
-              padding: "16px",
-
-              borderRadius: 14,
-
-              border: `1.5px dashed ${theme.border}`,
-
-              background: theme.bg,
-              color: theme.ink,
-
-              opacity: uploading ? 0.5 : 0.7,
-
-              fontWeight: 700,
-              fontSize: 13,
-
-              cursor: uploading
-                ? "default"
-                : "pointer",
-
-              marginBottom: 12,
-            }}
-          >
-            {uploading
-              ? "Preparing photo… 🌷"
-              : "📷 Add a photo to today's entry"}
-          </button>
         )}
 
         <input
           ref={fileRef}
           type="file"
           accept="image/*"
+          hidden
           onChange={handlePhoto}
-          style={{
-            display: "none",
-          }}
         />
 
-        {/* Text */}
-
-        <textarea
-          value={text}
-          onChange={handleTextChange}
-          onBlur={handleBlur}
-          placeholder="Write a little, or nothing at all…"
-          style={{
-            ...inputStyle(theme),
-
-            minHeight: 110,
-
-            fontSize: 15,
-            lineHeight: 1.55,
-
-            resize: "vertical",
-          }}
-        />
-
-        {/* Save status */}
-
-        <div
-          style={{
-            minHeight: 18,
-
-            marginTop: 6,
-
-            display: "flex",
-            justifyContent: "flex-end",
-            alignItems: "center",
-
-            fontSize: 10.5,
-            fontWeight: 650,
-
-            color:
-              saveStatus === "error"
-                ? "#c45b5b"
-                : theme.ink,
-
-            opacity:
-              saveStatus === "error"
-                ? 0.9
-                : 0.5,
-          }}
+        <button
+          className="photo-button"
+          onClick={() =>
+            fileRef.current?.click()
+          }
         >
-          {saveStatus === "saving" && (
-            <span>
-              Saving… 🌱
-            </span>
-          )}
+          📷 add a picture
+        </button>
 
-          {saveStatus === "saved" && (
-            <span>
-              Saved ✓
-            </span>
-          )}
-
-          {saveStatus === "error" && (
-            <span>
-              Couldn't save ⚠️
-            </span>
-          )}
-        </div>
-      </Panel>
-
-      {/* Recent entries */}
-
-      {recent.length > 0 && (
-        <>
-          <div
-            style={{
-              fontWeight: 800,
-              fontSize: 13.5,
-
-              color: theme.ink,
-
-              opacity: 0.7,
-
-              margin: "4px 0 10px",
-            }}
-          >
-            Recent entries
+        {error && (
+          <div className="star-error">
+            {error}
           </div>
+        )}
 
-          <div
-            style={{
-              display: "grid",
-              gap: 12,
-            }}
+        <button
+          className="drop-button"
+          disabled={saving}
+          onClick={submit}
+        >
+          {saving
+            ? "folding your star..."
+            : "⭐ drop it in the jar"}
+        </button>
+      </TornPaper>
+    </div>
+  );
+}
+
+function MemoryModal({
+  star,
+  onClose,
+  onAnother,
+}) {
+  if (!star) return null;
+
+  const c = getColor(star.color);
+
+  return (
+    <div className="star-overlay">
+      <TornPaper
+        className="memory-paper torn-paper-modal"
+        style={{
+          "--paper-color": c.soft,
+        }}
+      >
+        <div className="memory-star">
+          ★
+        </div>
+
+        <button
+          className="paper-close"
+          onClick={onClose}
+        >
+          ×
+        </button>
+
+        <div className="memory-text">
+          “{star.text}”
+        </div>
+
+        {star.photoUrl && (
+          <img
+            className="memory-photo"
+            src={star.photoUrl}
+            alt=""
+          />
+        )}
+
+        <div className="memory-date">
+          {formatDate(star.createdAt)}
+        </div>
+
+        <div className="memory-actions">
+          <button onClick={onClose}>
+            ↩ tuck it back
+          </button>
+
+          <button onClick={onAnother}>
+            ⭐ unfold another
+          </button>
+        </div>
+      </TornPaper>
+    </div>
+  );
+}
+
+function AllStarsModal({
+  stars,
+  onClose,
+  onEdit,
+  onDelete,
+}) {
+  const [search, setSearch] = useState("");
+  const [filterColor, setFilterColor] =
+    useState("all");
+
+  const filtered = useMemo(() => {
+    return stars.filter((star) => {
+      const matchesText =
+        !search ||
+        star.text
+          .toLowerCase()
+          .includes(search.toLowerCase());
+
+      const matchesColor =
+        filterColor === "all" ||
+        star.color === filterColor;
+
+      return matchesText && matchesColor;
+    });
+  }, [stars, search, filterColor]);
+
+  return (
+    <div className="star-overlay">
+      <TornPaper className="all-stars-panel torn-paper-modal">
+        <button
+          className="panel-back"
+          onClick={onClose}
+        >
+          ← back to jar
+        </button>
+
+        <div className="all-stars-title">
+          your paper stars
+        </div>
+
+        <div className="all-stars-count">
+          {stars.length} folded and kept.
+        </div>
+
+        <input
+          value={search}
+          onChange={(e) =>
+            setSearch(e.target.value)
+          }
+          placeholder="🔎 search memories..."
+          className="star-search"
+        />
+
+        <div className="filter-row">
+          <button
+            className={
+              filterColor === "all"
+                ? "filter-active"
+                : ""
+            }
+            onClick={() =>
+              setFilterColor("all")
+            }
           >
-            {recent.map(([date, value]) => {
-              const journal =
-                value.journal;
+            all
+          </button>
+
+          {STAR_COLORS.map((c) => (
+            <button
+              key={c.id}
+              className={
+                filterColor === c.id
+                  ? "filter-active"
+                  : ""
+              }
+              onClick={() =>
+                setFilterColor(c.id)
+              }
+            >
+              {c.emoji}
+            </button>
+          ))}
+        </div>
+
+        {filtered.length === 0 ? (
+          <div className="no-stars">
+            No little memories found. 🌱
+          </div>
+        ) : (
+          <div className="stars-grid">
+            {filtered.map((star) => {
+              const c = getColor(star.color);
 
               return (
                 <div
-                  key={date}
-                  className="mwt-card"
+                  key={star._id}
+                  className="memory-card"
                   style={{
-                    background:
-                      theme.paper,
-
-                    border: `1px solid ${theme.border}`,
-
-                    borderRadius: 16,
-
-                    padding:
-                      journal.photo
-                        ? "10px 10px 14px"
-                        : 16,
-
-                    boxShadow:
-                      "0 2px 14px rgba(60,40,30,0.05)",
+                    "--card-bg": c.soft,
                   }}
                 >
-                  {/* Recent photo */}
+                  <div className="memory-card-star">
+                    ★
+                  </div>
 
-                  {journal.photo && (
+                  {star.photoUrl && (
                     <img
-                      src={
-                        journal.photo
-                      }
+                      src={star.photoUrl}
                       alt=""
-                      style={{
-                        width: "100%",
-
-                        borderRadius: 10,
-
-                        maxHeight: 220,
-
-                        objectFit:
-                          "cover",
-
-                        marginBottom: 10,
-
-                        display:
-                          "block",
-                      }}
                     />
                   )}
 
-                  {/* Date */}
-
-                  <div
-                    style={{
-                      fontSize: 11.5,
-
-                      fontWeight: 800,
-
-                      opacity: 0.55,
-
-                      marginBottom: 4,
-
-                      padding:
-                        journal.photo
-                          ? "0 4px"
-                          : 0,
-                    }}
-                  >
-                    {fmtNiceDate(
-                      date
-                    )}
+                  <div className="memory-card-text">
+                    {star.text}
                   </div>
 
-                  {/* Journal text */}
+                  <div className="memory-card-date">
+                    {formatDate(star.createdAt)}
+                  </div>
 
-                  {journal.text && (
-                    <div
-                      className="font-hand"
-                      style={{
-                        fontSize: 17,
-
-                        lineHeight: 1.5,
-
-                        color:
-                          theme.ink,
-
-                        padding:
-                          journal.photo
-                            ? "0 4px"
-                            : 0,
-
-                        whiteSpace:
-                          "pre-wrap",
-
-                        overflowWrap:
-                          "anywhere",
-                      }}
-                    >
-                      {
-                        journal.text
+                  <div className="memory-card-actions">
+                    <button
+                      onClick={() =>
+                        onEdit(star)
                       }
-                    </div>
-                  )}
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        onDelete(star)
+                      }
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
               );
             })}
           </div>
-        </>
+        )}
+      </TornPaper>
+    </div>
+  );
+}
+
+function ShareModal({
+  onClose,
+}) {
+  const [loading, setLoading] =
+    useState(true);
+  const [link, setLink] = useState("");
+  const [copied, setCopied] =
+    useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    starsApi
+      .shareLink()
+      .then(({ shareToken }) => {
+        if (!active) return;
+
+        setLink(
+          `${window.location.origin}/share/jar/${shareToken}`
+        );
+      })
+      .catch((err) => {
+        console.error(err);
+
+        if (active) {
+          setError(
+            "Couldn't create your share link."
+          );
+        }
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopied(true);
+
+      setTimeout(
+        () => setCopied(false),
+        2000
+      );
+    } catch {
+      setError("Couldn't copy the link.");
+    }
+  };
+
+  const share = async () => {
+    if (!link) return;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "My little jar of stars ✨",
+          text: "A few happy moments I've kept.",
+          url: link,
+        });
+      } catch {
+        // user cancelled
+      }
+    } else {
+      copy();
+    }
+  };
+
+  return (
+    <div className="star-overlay">
+      <TornPaper className="share-paper torn-paper-modal">
+        <button
+          className="paper-close"
+          onClick={onClose}
+        >
+          ×
+        </button>
+
+        <div className="paper-title">
+          your jar is ready ✨
+        </div>
+
+        <p>
+          Share your little collection of
+          happy memories with someone.
+        </p>
+
+        {loading ? (
+          <div className="share-loading">
+            preparing your jar...
+          </div>
+        ) : error ? (
+          <div className="star-error">
+            {error}
+          </div>
+        ) : (
+          <>
+            <div className="share-link">
+              {link}
+            </div>
+
+            <button
+              className="drop-button"
+              onClick={copy}
+            >
+              {copied
+                ? "✓ Link copied!"
+                : "Copy link"}
+            </button>
+
+            <button
+              className="photo-button"
+              onClick={share}
+            >
+              🔗 Share jar
+            </button>
+          </>
+        )}
+      </TornPaper>
+    </div>
+  );
+}
+
+function EditStarModal({
+  star,
+  onClose,
+  onSaved,
+}) {
+  const [text, setText] =
+    useState(star.text);
+
+  const [color, setColor] =
+    useState(star.color);
+
+  const [saving, setSaving] =
+    useState(false);
+
+  const save = async () => {
+    if (!text.trim()) return;
+
+    try {
+      setSaving(true);
+
+      const updated =
+        await starsApi.update(
+          star._id,
+          {
+            text: text.trim(),
+            color,
+            photoUrl: star.photoUrl,
+          }
+        );
+
+      onSaved(updated);
+    } catch (err) {
+      console.error(err);
+      alert("Couldn't update the star.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="star-overlay">
+      <TornPaper className="paper-modal torn-paper-modal">
+        <button
+          className="paper-close"
+          onClick={onClose}
+        >
+          ×
+        </button>
+
+        <div className="paper-title">
+          unfold & edit
+        </div>
+
+        <textarea
+          value={text}
+          onChange={(e) =>
+            setText(e.target.value)
+          }
+          className="star-textarea"
+        />
+
+        <div className="color-title">
+          star color
+        </div>
+
+        <div className="color-row">
+          {STAR_COLORS.map((c) => (
+            <button
+              key={c.id}
+              onClick={() =>
+                setColor(c.id)
+              }
+              className={`color-choice ${
+                color === c.id
+                  ? "selected"
+                  : ""
+              }`}
+              style={{
+                "--choice": c.color,
+              }}
+            >
+              ★
+            </button>
+          ))}
+        </div>
+
+        <button
+          className="drop-button"
+          disabled={saving}
+          onClick={save}
+        >
+          {saving
+            ? "saving..."
+            : "save changes ✨"}
+        </button>
+      </TornPaper>
+    </div>
+  );
+}
+
+export default function JournalView() {
+  const [stars, setStars] =
+    useState([]);
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [error, setError] =
+    useState("");
+
+  const [showAdd, setShowAdd] =
+    useState(false);
+
+  const [showAll, setShowAll] =
+    useState(false);
+
+  const [showShare, setShowShare] =
+    useState(false);
+
+  const [memoryStar, setMemoryStar] =
+    useState(null);
+
+  const [editingStar, setEditingStar] =
+    useState(null);
+
+  const [dropping, setDropping] =
+    useState(false);
+
+  const loadStars = async () => {
+    try {
+      setLoading(true);
+
+      const data =
+        await starsApi.list();
+
+      setStars(data);
+    } catch (err) {
+      console.error(err);
+      setError(
+        "Couldn't load your little jar."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadStars();
+  }, []);
+
+  const addStar = (star) => {
+    setStars((prev) => [
+      star,
+      ...prev,
+    ]);
+
+    setShowAdd(false);
+
+    setDropping(true);
+
+    setTimeout(
+      () => setDropping(false),
+      1100
+    );
+  };
+
+  const openRandomMemory = () => {
+    if (!stars.length) {
+      setShowAdd(true);
+      return;
+    }
+
+    const random =
+      stars[
+        Math.floor(
+          Math.random() * stars.length
+        )
+      ];
+
+    setMemoryStar(random);
+  };
+
+  const unfoldAnother = () => {
+    if (stars.length <= 1) return;
+
+    let next = memoryStar;
+
+    while (
+      next?._id === memoryStar?._id
+    ) {
+      next =
+        stars[
+          Math.floor(
+            Math.random() *
+              stars.length
+          )
+        ];
+    }
+
+    setMemoryStar(next);
+  };
+
+  const deleteStar = async (star) => {
+    const confirmed = window.confirm(
+      "Let this little memory leave the jar?"
+    );
+
+    if (!confirmed) return;
+
+    try {
+      await starsApi.remove(
+        star._id
+      );
+
+      setStars((prev) =>
+        prev.filter(
+          (s) =>
+            s._id !== star._id
+        )
+      );
+    } catch (err) {
+      console.error(err);
+      alert(
+        "Couldn't delete the star."
+      );
+    }
+  };
+
+  const saveEditedStar = (updated) => {
+    setStars((prev) =>
+      prev.map((s) =>
+        s._id === updated._id
+          ? updated
+          : s
+      )
+    );
+
+    setEditingStar(null);
+  };
+
+  if (loading) {
+    return (
+      <div className="star-page-loading">
+        ✨ filling your little jar...
+      </div>
+    );
+  }
+
+  return (
+    <div className="star-jar-page">
+      <style>{`
+        .star-jar-page {
+          position: relative;
+          padding: 8px 0 35px;
+          font-family: Georgia, serif;
+          overflow: hidden;
+        }
+
+        .star-jar-page::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          background:
+            radial-gradient(circle at 20% 20%, rgba(244,216,172,.24), transparent 28%),
+            radial-gradient(circle at 80% 40%, rgba(215,195,225,.18), transparent 30%);
+        }
+
+        .star-jar-header {
+          text-align: center;
+          position: relative;
+          z-index: 2;
+          margin-bottom: 10px;
+        }
+
+        .star-jar-prompt {
+          font-family: "Courier New", monospace;
+          color: #3374b8;
+          font-size: 23px;
+          margin-bottom: 7px;
+        }
+
+        .star-jar-count {
+          font-family: "Courier New", monospace;
+          color: #332b27;
+          font-size: 13px;
+        }
+
+        .jar-wrapper {
+          display: block;
+          position: relative;
+          width: min(310px, 78vw);
+          height: 390px;
+          margin: 15px auto 20px;
+          border: 0;
+          background: transparent;
+          cursor: pointer;
+          padding: 0;
+        }
+
+        .jar-glow {
+          position: absolute;
+          inset: 35px 10px 0;
+          border-radius: 50%;
+          background: radial-gradient(
+            circle,
+            rgba(255,255,255,.9),
+            rgba(244,221,205,.2) 55%,
+            transparent 72%
+          );
+          filter: blur(10px);
+        }
+
+        .jar-lid {
+          position: absolute;
+          top: 2px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 150px;
+          height: 42px;
+          border: 3px solid rgba(130,130,130,.65);
+          border-radius: 12px 12px 8px 8px;
+          background: linear-gradient(
+            rgba(245,245,245,.88),
+            rgba(190,190,190,.35)
+          );
+          box-shadow:
+            0 4px 8px rgba(50,40,30,.12),
+            inset 0 2px 4px rgba(255,255,255,.9);
+          z-index: 3;
+        }
+
+        .jar-lid-lines {
+          position: absolute;
+          inset: 8px 8px;
+          border-top: 2px solid rgba(100,100,100,.35);
+          border-bottom: 2px solid rgba(100,100,100,.25);
+          opacity: .7;
+        }
+
+        .jar-body {
+          position: absolute;
+          top: 34px;
+          bottom: 22px;
+          left: 22px;
+          right: 22px;
+          border: 3px solid rgba(150,150,150,.42);
+          border-radius: 48px 48px 65px 65px;
+          background:
+            linear-gradient(
+              90deg,
+              rgba(255,255,255,.58),
+              rgba(235,245,248,.18) 18%,
+              rgba(255,255,255,.15) 50%,
+              rgba(205,225,232,.2) 82%,
+              rgba(255,255,255,.6)
+            );
+          box-shadow:
+            inset 7px 0 10px rgba(255,255,255,.7),
+            inset -8px 0 15px rgba(120,150,160,.08),
+            0 12px 30px rgba(80,70,60,.13);
+          overflow: hidden;
+        }
+
+        .jar-body::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          border-radius: inherit;
+          background:
+            linear-gradient(
+              90deg,
+              rgba(255,255,255,.6),
+              transparent 15%,
+              transparent 80%,
+              rgba(255,255,255,.4)
+            );
+          pointer-events: none;
+          z-index: 4;
+        }
+
+        .jar-shine {
+          position: absolute;
+          top: 25px;
+          left: 20px;
+          width: 16px;
+          height: 230px;
+          border-radius: 50%;
+          background: rgba(255,255,255,.38);
+          filter: blur(3px);
+          z-index: 5;
+          pointer-events: none;
+        }
+
+        .jar-base {
+          position: absolute;
+          bottom: 6px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 190px;
+          height: 18px;
+          border-radius: 50%;
+          background: rgba(120,100,90,.12);
+          filter: blur(3px);
+        }
+
+        .paper-star {
+          position: absolute;
+          width: 31px;
+          height: 31px;
+          border: 0;
+          background: transparent;
+          padding: 0;
+          z-index: 2;
+          cursor: pointer;
+          filter: drop-shadow(1px 2px 2px rgba(60,40,30,.16));
+        }
+
+        .paper-star span {
+          display: block;
+          font-size: 30px;
+          color: var(--star-color);
+          text-shadow:
+            1px 1px 0 rgba(255,255,255,.7),
+            -1px -1px 0 rgba(100,70,60,.12);
+          transform: rotate(-5deg);
+        }
+
+        .empty-jar-heart {
+          position: absolute;
+          left: 50%;
+          top: 47%;
+          transform: translate(-50%, -50%);
+          color: #e5a7b5;
+          font-size: 35px;
+          opacity: .6;
+        }
+
+        .star-drop {
+          animation: starDrop 1s cubic-bezier(.2,.8,.25,1);
+        }
+
+        @keyframes starDrop {
+          0% {
+            opacity: 0;
+            transform: translateY(-180px) rotate(-30deg) scale(.7);
+          }
+
+          65% {
+            opacity: 1;
+            transform: translateY(12px) rotate(14deg) scale(1.08);
+          }
+
+          82% {
+            transform: translateY(-5px) rotate(-7deg) scale(.96);
+          }
+
+          100% {
+            transform: translateY(0) rotate(4deg) scale(1);
+          }
+        }
+
+        .jar-wrapper:active {
+          transform: scale(.985);
+        }
+
+        .star-actions {
+          position: relative;
+          z-index: 3;
+          width: min(330px, 88vw);
+          margin: 0 auto;
+          display: grid;
+          gap: 10px;
+        }
+
+        .paper-button {
+          border: 0;
+          padding: 12px 18px;
+          background: #dfbb82;
+          color: #4d3826;
+          font-family: "Courier New", monospace;
+          font-size: 13px;
+          cursor: pointer;
+          box-shadow: 2px 3px 7px rgba(70,50,30,.15);
+          clip-path: polygon(
+            0% 16%, 8% 8%, 18% 14%, 30% 5%, 42% 12%, 54% 4%, 64% 14%, 76% 7%, 90% 16%, 100% 20%,
+            98% 78%, 92% 90%, 82% 82%, 72% 94%, 60% 83%, 48% 96%, 34% 86%, 20% 97%, 9% 88%, 0% 82%
+          );
+          transition: transform .18s ease;
+        }
+
+        .paper-button:hover {
+          transform: translateY(-2px) rotate(-.5deg);
+        }
+
+        .paper-button:active {
+          transform: translateY(1px);
+        }
+
+        .star-page-loading {
+          min-height: 60vh;
+          display: grid;
+          place-items: center;
+          font-family: "Courier New", monospace;
+          color: #7b7068;
+        }
+
+        .star-error {
+          background: #f8dddd;
+          color: #9a4b4b;
+          padding: 8px 10px;
+          border-radius: 8px;
+          font-size: 12px;
+          margin: 8px 0;
+        }
+
+        .star-overlay {
+          position: fixed;
+          inset: 0;
+          z-index: 1000;
+          background: rgba(55,45,40,.28);
+          backdrop-filter: blur(4px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+          overflow: hidden;
+        }
+
+        /* =========================================================
+           TORN PAPER
+           ========================================================= */
+
+        .torn-paper {
+          --paper: #f8f1f3;
+          --paper-shadow: rgba(65, 48, 38, 0.20);
+
+          position: relative;
+          width: min(92vw, 520px);
+          box-sizing: border-box;
+
+          background:
+            radial-gradient(
+              circle at 20% 15%,
+              rgba(255,255,255,0.45),
+              transparent 35%
+            ),
+            radial-gradient(
+              circle at 80% 80%,
+              rgba(190,170,160,0.08),
+              transparent 40%
+            ),
+            var(--paper);
+
+          box-shadow:
+            0 18px 35px rgba(55, 42, 35, 0.13),
+            0 4px 10px rgba(55, 42, 35, 0.10);
+
+          clip-path: polygon(
+            1.8% 2%,
+            8% 1.2%,
+            15% 2.2%,
+            23% 1.3%,
+            31% 2.1%,
+            40% 1.1%,
+            49% 2%,
+            58% 1.2%,
+            67% 2.1%,
+            76% 1.1%,
+            85% 2%,
+            93% 1.2%,
+            98% 6%,
+            97.2% 13%,
+            98.5% 21%,
+            97% 29%,
+            98.2% 37%,
+            97% 45%,
+            98.3% 53%,
+            97% 61%,
+            98.2% 69%,
+            97% 77%,
+            98% 85%,
+            96.5% 94%,
+            90% 96.8%,
+            82% 95.8%,
+            74% 97.2%,
+            66% 96%,
+            57% 97.3%,
+            48% 96.2%,
+            39% 97.1%,
+            30% 96%,
+            21% 97.2%,
+            12% 96%,
+            3% 97%,
+            1.5% 91%,
+            2.8% 83%,
+            1.4% 75%,
+            2.7% 67%,
+            1.5% 59%,
+            2.6% 51%,
+            1.4% 43%,
+            2.7% 35%,
+            1.5% 27%,
+            2.5% 19%,
+            1.3% 11%
+          );
+
+          overflow: visible;
+        }
+
+        .torn-paper-texture {
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          opacity: 0.32;
+          background-image: radial-gradient(rgba(120, 100, 90, 0.10) 0.6px, transparent 0.7px);
+          background-size: 5px 5px;
+          mix-blend-mode: multiply;
+        }
+
+        .torn-paper::after {
+          content: "";
+          position: absolute;
+          inset: 8px;
+          pointer-events: none;
+          background: linear-gradient(90deg, rgba(255,255,255,0.12), transparent 20%, transparent 80%, rgba(100,80,70,0.04));
+          opacity: 0.7;
+        }
+
+        .torn-paper-content {
+          position: relative;
+          z-index: 2;
+          padding: 46px 30px 30px;
+        }
+
+        .torn-paper-tape {
+          position: absolute;
+          z-index: 5;
+          top: -8px;
+          left: 50%;
+          width: 118px;
+          height: 31px;
+          transform: translateX(-50%) rotate(-1deg);
+          opacity: 0.92;
+          box-shadow: 0 2px 5px rgba(70, 50, 30, 0.10);
+          clip-path: polygon(
+            2% 8%,
+            16% 4%,
+            31% 7%,
+            47% 3%,
+            62% 6%,
+            78% 4%,
+            98% 8%,
+            96% 92%,
+            82% 95%,
+            66% 92%,
+            50% 96%,
+            35% 93%,
+            18% 96%,
+            3% 91%
+          );
+          background-image: repeating-linear-gradient(90deg, rgba(255,255,255,0.12) 0, rgba(255,255,255,0.12) 1px, transparent 1px, transparent 4px);
+        }
+
+        .torn-modal-backdrop {
+          position: fixed;
+          inset: 0;
+          z-index: 1000;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 24px;
+          background: rgba(44, 39, 35, 0.30);
+          backdrop-filter: blur(5px);
+          -webkit-backdrop-filter: blur(5px);
+          animation: tornBackdropIn 0.25s ease;
+        }
+
+        .torn-paper-modal {
+          animation: tornPaperIn 0.32s cubic-bezier(.22,.8,.25,1);
+        }
+
+        @keyframes tornBackdropIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+
+        @keyframes tornPaperIn {
+          from {
+            opacity: 0;
+            transform: translateY(15px) rotate(-1.5deg) scale(0.96);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) rotate(0deg) scale(1);
+          }
+        }
+
+        .paper-modal,
+        .memory-paper,
+        .share-paper {
+          position: relative;
+          width: min(470px, 100%);
+          max-height: 90vh;
+          overflow: auto;
+          padding: 42px 25px 25px;
+          background: #f5eeee;
+          box-shadow: 8px 12px 30px rgba(50,40,30,.2);
+          border: 1px solid rgba(150, 125, 105, 0.12);
+        }
+
+        .paper-modal::before,
+        .memory-paper::before,
+        .share-paper::before,
+        .paper-modal::after,
+        .memory-paper::after,
+        .share-paper::after {
+          content: "";
+          position: absolute;
+          left: 12px;
+          right: 12px;
+          height: 18px;
+          pointer-events: none;
+          background: rgba(255,255,255,0.12);
+          filter: blur(0.5px);
+        }
+
+        .paper-modal::before,
+        .memory-paper::before,
+        .share-paper::before {
+          top: -7px;
+          clip-path: polygon(
+            0% 100%, 7% 38%, 15% 78%, 24% 32%, 33% 76%, 42% 24%, 52% 83%, 62% 26%, 71% 78%, 80% 30%, 89% 80%, 100% 100%
+          );
+        }
+
+        .paper-modal::after,
+        .memory-paper::after,
+        .share-paper::after {
+          bottom: -8px;
+          clip-path: polygon(
+            0% 0%, 12% 64%, 23% 25%, 35% 72%, 47% 22%, 57% 70%, 67% 28%, 78% 70%, 88% 24%, 100% 0%
+          );
+        }
+
+        .modal-tape {
+          position: absolute;
+          width: 110px;
+          height: 28px;
+          background: #d8ae59;
+          top: 7px;
+          left: 50%;
+          transform: translateX(-50%) rotate(-1deg);
+          opacity: .9;
+        }
+
+        .paper-close {
+          position: absolute;
+          top: 12px;
+          right: 15px;
+          border: 0;
+          background: transparent;
+          font-size: 24px;
+          cursor: pointer;
+          color: #555;
+          z-index: 3;
+        }
+
+        .paper-title {
+          font-family: Georgia, serif;
+          font-size: 27px;
+          color: #3e76b6;
+          text-align: center;
+          margin-bottom: 10px;
+        }
+
+        .paper-prompt {
+          text-align: center;
+          font-family: "Courier New", monospace;
+          font-size: 12px;
+          line-height: 1.5;
+          margin-bottom: 15px;
+          color: #4b403b;
+        }
+
+        .star-textarea {
+          width: 100%;
+          min-height: 180px;
+          resize: vertical;
+          box-sizing: border-box;
+          border: 0;
+          outline: 0;
+          padding: 18px;
+          background:
+            repeating-linear-gradient(
+              transparent 0,
+              transparent 31px,
+              rgba(90,120,150,.12) 32px
+            );
+          font-family: "Courier New", monospace;
+          font-size: 15px;
+          line-height: 32px;
+          color: #423934;
+        }
+
+        .character-count {
+          text-align: right;
+          font-size: 10px;
+          color: #888;
+        }
+
+        .color-title {
+          font-family: "Courier New", monospace;
+          font-size: 12px;
+          margin: 14px 0 8px;
+        }
+
+        .color-row {
+          display: flex;
+          gap: 10px;
+          justify-content: center;
+        }
+
+        .color-choice {
+          width: 44px;
+          height: 44px;
+          border: 2px solid transparent;
+          border-radius: 50%;
+          background: var(--choice);
+          color: white;
+          font-size: 22px;
+          cursor: pointer;
+          filter: drop-shadow(1px 2px 2px rgba(0,0,0,.15));
+        }
+
+        .color-choice.selected {
+          border-color: #4c403a;
+          transform: scale(1.12);
+        }
+
+        .photo-button {
+          display: block;
+          width: 100%;
+          margin-top: 13px;
+          padding: 11px;
+          border: 0;
+          border-radius: 10px;
+          background: rgba(255,255,255,.7);
+          color: #554940;
+          font-family: "Courier New", monospace;
+          cursor: pointer;
+        }
+
+        .photo-preview {
+          position: relative;
+          margin-top: 13px;
+        }
+
+        .photo-preview img {
+          display: block;
+          width: 100%;
+          max-height: 180px;
+          object-fit: cover;
+          border-radius: 10px;
+        }
+
+        .photo-preview button {
+          position: absolute;
+          right: 6px;
+          top: 6px;
+          border: 0;
+          border-radius: 50%;
+          width: 28px;
+          height: 28px;
+          background: rgba(0,0,0,.55);
+          color: white;
+          cursor: pointer;
+        }
+
+        .drop-button {
+          width: 100%;
+          margin-top: 15px;
+          padding: 14px;
+          border: 1px solid #bfa48f;
+          border-radius: 15px;
+          background: #eadbcb;
+          color: #514238;
+          font-family: Georgia, serif;
+          font-size: 15px;
+          cursor: pointer;
+          box-shadow: 3px 5px 10px rgba(70,50,30,.13);
+        }
+
+        .drop-button:disabled {
+          opacity: .55;
+          cursor: wait;
+        }
+
+        .memory-paper {
+          background: var(--paper-color);
+          text-align: center;
+          padding-top: 45px;
+        }
+
+        .memory-star {
+          font-size: 42px;
+          color: #d9a9b8;
+          margin-bottom: 10px;
+        }
+
+        .memory-text {
+          font-family: "Courier New", monospace;
+          font-size: 18px;
+          line-height: 1.7;
+          color: #443b37;
+          padding: 15px 8px;
+        }
+
+        .memory-photo {
+          width: 100%;
+          max-height: 300px;
+          object-fit: cover;
+          border-radius: 12px;
+          margin-top: 10px;
+        }
+
+        .memory-date {
+          margin-top: 14px;
+          font-family: "Courier New", monospace;
+          color: #776c65;
+          font-size: 12px;
+        }
+
+        .memory-actions {
+          display: flex;
+          gap: 8px;
+          margin-top: 20px;
+        }
+
+        .memory-actions button {
+          flex: 1;
+          padding: 10px;
+          border: 0;
+          border-radius: 10px;
+          background: rgba(255,255,255,.65);
+          cursor: pointer;
+          font-family: "Courier New", monospace;
+          font-size: 11px;
+        }
+
+        .all-stars-panel {
+          position: relative;
+          width: min(850px, 100%);
+          max-height: 90vh;
+          overflow: auto;
+          padding: 25px;
+          background: #f9f5eb;
+          box-shadow: 8px 12px 35px rgba(50,40,30,.2);
+          border: 1px solid rgba(120, 105, 90, 0.12);
+          clip-path: polygon(
+            0% 4%, 10% 1%, 18% 6%, 30% 0%, 42% 7%, 54% 1%, 66% 8%, 78% 0%, 90% 6%, 100% 2%,
+            98% 87%, 94% 100%, 83% 94%, 70% 100%, 58% 94%, 42% 100%, 28% 95%, 15% 100%, 5% 95%, 0% 88%
+          );
+        }
+
+        .panel-back {
+          border: 0;
+          background: transparent;
+          cursor: pointer;
+          font-family: "Courier New", monospace;
+          color: #5d5048;
+        }
+
+        .all-stars-title {
+          text-align: center;
+          font-family: Georgia, serif;
+          color: #3478b9;
+          font-size: 28px;
+          margin-top: 15px;
+        }
+
+        .all-stars-count {
+          text-align: center;
+          font-family: "Courier New", monospace;
+          margin: 7px 0 18px;
+          font-size: 12px;
+        }
+
+        .star-search {
+          width: 100%;
+          box-sizing: border-box;
+          padding: 12px;
+          border: 1px solid #ddd0c4;
+          border-radius: 10px;
+          background: white;
+          outline: none;
+          font-family: "Courier New", monospace;
+        }
+
+        .filter-row {
+          display: flex;
+          gap: 7px;
+          margin: 10px 0 17px;
+          flex-wrap: wrap;
+        }
+
+        .filter-row button {
+          border: 1px solid #ddd0c4;
+          background: #fffaf4;
+          border-radius: 999px;
+          padding: 6px 11px;
+          cursor: pointer;
+          font-family: "Courier New", monospace;
+        }
+
+        .filter-row .filter-active {
+          background: #ddc08e;
+          border-color: #c5a46c;
+        }
+
+        .stars-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 14px;
+        }
+
+        .memory-card {
+          position: relative;
+          padding: 22px 15px 15px;
+          background: var(--card-bg);
+          min-height: 140px;
+          box-shadow: 2px 4px 10px rgba(70,50,30,.08);
+          border: 1px solid rgba(140, 116, 93, 0.08);
+          clip-path: polygon(
+            0% 5%, 10% 1%, 18% 7%, 28% 2%, 38% 8%, 48% 1%, 60% 7%, 72% 2%, 84% 8%, 94% 1%, 100% 5%,
+            98% 90%, 92% 100%, 80% 95%, 68% 100%, 56% 94%, 44% 100%, 32% 95%, 20% 100%, 10% 94%, 0% 90%
+          );
+        }
+
+        .memory-card::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(135deg, rgba(255,255,255,0.18), transparent 35%, rgba(0,0,0,0.02));
+          pointer-events: none;
+        }
+
+        .memory-card-star {
+          position: absolute;
+          top: 8px;
+          left: 10px;
+          font-size: 17px;
+        }
+
+        .memory-card img {
+          width: 100%;
+          max-height: 140px;
+          object-fit: cover;
+          border-radius: 8px;
+          margin-bottom: 8px;
+        }
+
+        .memory-card-text {
+          font-family: "Courier New", monospace;
+          font-size: 13px;
+          line-height: 1.5;
+          margin-top: 7px;
+        }
+
+        .memory-card-date {
+          font-size: 10px;
+          opacity: .55;
+          margin-top: 10px;
+        }
+
+        .memory-card-actions {
+          display: flex;
+          gap: 7px;
+          margin-top: 10px;
+        }
+
+        .memory-card-actions button {
+          border: 0;
+          background: rgba(255,255,255,.55);
+          padding: 5px 8px;
+          border-radius: 7px;
+          cursor: pointer;
+          font-size: 10px;
+        }
+
+        .no-stars {
+          text-align: center;
+          padding: 60px 20px;
+          color: #82766d;
+          font-family: "Courier New", monospace;
+        }
+
+        .share-paper {
+          text-align: center;
+        }
+
+        .share-paper p {
+          font-family: "Courier New", monospace;
+          font-size: 13px;
+          line-height: 1.6;
+        }
+
+        .share-link {
+          word-break: break-all;
+          padding: 12px;
+          border-radius: 10px;
+          background: white;
+          font-family: "Courier New", monospace;
+          font-size: 11px;
+          margin: 15px 0;
+        }
+
+        .share-loading {
+          padding: 25px;
+          font-family: "Courier New", monospace;
+          font-size: 12px;
+        }
+
+        @media (max-width: 600px) {
+          .star-jar-page {
+            padding-top: 2px;
+          }
+
+          .jar-wrapper {
+            height: 350px;
+          }
+
+          .stars-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .all-stars-panel {
+            padding: 18px;
+          }
+
+          .paper-modal,
+          .memory-paper,
+          .share-paper {
+            padding-left: 18px;
+            padding-right: 18px;
+          }
+        }
+      `}</style>
+
+      <SectionTitle
+        theme={{
+          ...{},
+          accent: "#3478b9",
+          ink: "#423934",
+        }}
+        sub="Keep the little moments that made your day."
+      >
+        ⭐ Little Jar of Stars
+      </SectionTitle>
+
+      <div className="star-jar-header">
+        <div className="star-jar-prompt">
+          tap the jar
+        </div>
+
+        <div className="star-jar-count">
+          {stars.length}{" "}
+          {stars.length === 1
+            ? "star"
+            : "stars"}{" "}
+          captured inside.
+        </div>
+      </div>
+
+      {error && (
+        <div
+          className="star-error"
+          style={{
+            maxWidth: 350,
+            margin: "10px auto",
+          }}
+        >
+          {error}
+        </div>
+      )}
+
+      <Jar
+        stars={stars}
+        onTap={openRandomMemory}
+        dropping={dropping}
+      />
+
+      <div className="star-actions">
+        <button
+          className="paper-button"
+          onClick={() =>
+            setShowAdd(true)
+          }
+        >
+          + add a star
+        </button>
+
+        <button
+          className="paper-button"
+          onClick={() =>
+            setShowAll(true)
+          }
+        >
+          ★ view all stars
+        </button>
+
+        {/* <button
+          className="paper-button"
+          onClick={() =>
+            setShowShare(true)
+          }
+        >
+          🔗 share jar
+        </button> */}
+      </div>
+
+      {showAdd && (
+        <AddStarModal
+          onClose={() =>
+            setShowAdd(false)
+          }
+          onCreated={addStar}
+        />
+      )}
+
+      {memoryStar && (
+        <MemoryModal
+          star={memoryStar}
+          onClose={() =>
+            setMemoryStar(null)
+          }
+          onAnother={unfoldAnother}
+        />
+      )}
+
+      {showAll && (
+        <AllStarsModal
+          stars={stars}
+          onClose={() =>
+            setShowAll(false)
+          }
+          onEdit={(star) => {
+            setShowAll(false);
+            setEditingStar(star);
+          }}
+          onDelete={deleteStar}
+        />
+      )}
+
+      {editingStar && (
+        <EditStarModal
+          star={editingStar}
+          onClose={() =>
+            setEditingStar(null)
+          }
+          onSaved={saveEditedStar}
+        />
+      )}
+
+      {showShare && (
+        <ShareModal
+          onClose={() =>
+            setShowShare(false)
+          }
+        />
       )}
     </div>
   );

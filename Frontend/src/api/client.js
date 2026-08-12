@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_URL || "/api";
+export const BASE_URL = import.meta.env.VITE_API_URL || "/api";
 const TOKEN_KEY = "moni-wellness:token";
 
 export function getToken() {

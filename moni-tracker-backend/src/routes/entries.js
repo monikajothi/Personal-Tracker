@@ -20,11 +20,67 @@ router.get("/", async (req, res) => {
     }
     const entries = await Entry.find(query).sort({ date: 1 }).limit(400);
     const byDate = {};
-    for (const e of entries) byDate[e.date] = e.categories;
+
+    for (const e of entries) {
+      const categories = {
+        ...e.categories,
+      };
+
+      // Journal photos are large Base64 strings.
+      // Do NOT send them during the normal 120-day
+      // dashboard/calendar load.
+      if (categories.journal) {
+        categories.journal = {
+          ...categories.journal,
+          photo: null,
+        };
+      }
+
+      byDate[e.date] = categories;
+    }
+
     res.json(byDate);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to load entries" });
+  }
+});
+
+// GET /api/entries/journal/recent
+router.get("/journal/recent", async (req, res) => {
+  try {
+    const entries = await Entry.find({
+      userId: req.userId,
+      "categories.journal": { $exists: true },
+    })
+      .sort({ date: -1 })
+      .limit(20)
+      .lean();
+
+    const journals = entries
+      .map((entry) => {
+        const journal = entry.categories?.journal;
+
+        if (!journal) return null;
+
+        return {
+          date: entry.date,
+          journal: {
+            text: journal.text || "",
+            photo: journal.photo || null,
+            prompt: journal.prompt || "",
+          },
+        };
+      })
+      .filter(Boolean);
+
+    res.json(journals);
+  } catch (err) {
+    console.error("Failed to load journal:", err);
+
+    res.status(500).json({
+      error: "Failed to load journal",
+    });
   }
 });
 

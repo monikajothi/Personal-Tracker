@@ -12,6 +12,12 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       enum: ["female", "male", "non-binary", "prefer-not-to-say"],
     },
+    shareToken: {
+      type: String,
+      unique: true,
+      index: true,
+      default: () => crypto.randomBytes(24).toString("hex"),
+    },
   },
   { timestamps: true }
 );

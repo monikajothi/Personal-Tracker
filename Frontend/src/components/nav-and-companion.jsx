@@ -1,13 +1,25 @@
 import React, { useState } from "react";
-import { CAT_LINES } from "../constants.js";
+import { buildCompanionMessage } from "../constants.js";
 
-export function Companion({ theme, animationsOn, kind}) {
+export function Companion({ theme, animationsOn, kind, user, entries, todayComplete, progressPct }) {
   const [msg, setMsg] = useState(null);
+  const [closing, setClosing] = useState(false);
   const emoji = kind === "dog" ? "🐶" : "🐱";
 
   const say = () => {
-    setMsg(CAT_LINES[Math.floor(Math.random() * CAT_LINES.length)]);
-    setTimeout(() => setMsg(null), 2800);
+    const next = buildCompanionMessage({ user, entries, todayComplete, progressPct });
+    window.clearTimeout(say.hideTimer);
+    window.clearTimeout(say.removeTimer);
+    setClosing(false);
+    setMsg(next);
+
+    say.hideTimer = window.setTimeout(() => {
+      setClosing(true);
+      say.removeTimer = window.setTimeout(() => {
+        setMsg(null);
+        setClosing(false);
+      }, 900);
+    }, 4000);
   };
 
   return (
@@ -20,7 +32,7 @@ export function Companion({ theme, animationsOn, kind}) {
     pointerEvents: "auto"
   }}>
       {msg && (
-        <div className="mwt-fadeup font-hand" style={{ position: "absolute", bottom: 46, left: 0, background: theme.paper, border: `1.5px solid ${theme.border}`, borderRadius: 14, padding: "8px 14px", fontSize: 18, color: theme.ink, whiteSpace: "nowrap", boxShadow: "0 4px 14px rgba(0,0,0,0.1)" }}>{msg}</div>
+        <div className={closing ? "mwt-fade-down font-hand" : "mwt-fadeup font-hand"} style={{ position: "absolute", bottom: 46, left: 0, background: theme.paper, border: `1.5px solid ${theme.border}`, borderRadius: 14, padding: "8px 14px", fontSize: 18, color: theme.ink, whiteSpace: "nowrap", boxShadow: "0 4px 14px rgba(0,0,0,0.1)" }}>{msg}</div>
       )}
       <button onClick={say} title="pspsps" style={{ fontSize: 32, background: "none", border: "none", cursor: "pointer", filter: "drop-shadow(0 3px 4px rgba(0,0,0,0.15))" }} className={animationsOn ? "mwt-float" : ""}>
         {emoji}

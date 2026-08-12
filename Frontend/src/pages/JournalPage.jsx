@@ -9,6 +9,7 @@ import {
   todayStr,
   fmtNiceDate,
 } from "../constants.js";
+import { entriesApi } from "../api/index.js";
 import { resizeImageFile } from "../utils/image.js";
 
 export default function JournalView({
@@ -37,9 +38,11 @@ export default function JournalView({
 
   const [uploading, setUploading] = useState(false);
   const [saveStatus, setSaveStatus] = useState("saved");
+  const [journalHistory, setJournalHistory] = useState({});
 
   const fileRef = useRef(null);
   const saveTimerRef = useRef(null);
+  const saveSequenceRef = useRef(0);
 
   // Prevent server/state updates from overwriting text
   // while the user is actively editing.
@@ -81,6 +84,29 @@ export default function JournalView({
   }, [t, entries]);
 
   /* --------------------------------
+     Fetch the full journal history from the API,
+     independently from the 120-day entries cache.
+  -------------------------------- */
+
+  useEffect(() => {
+    let cancelled = false;
+
+    entriesApi.journalHistory()
+      .then((history) => {
+        if (!cancelled) {
+          setJournalHistory(history || {});
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load journal history:", err);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  /* --------------------------------
      Cleanup autosave timer
   -------------------------------- */
 
@@ -97,6 +123,8 @@ export default function JournalView({
   -------------------------------- */
 
   const saveNow = async (patch = {}) => {
+    const myRound = ++saveSequenceRef.current;
+
     try {
       setSaveStatus("saving");
 
@@ -106,6 +134,11 @@ export default function JournalView({
         prompt,
         ...patch,
       });
+
+      // Ignore stale completion results.
+      if (myRound !== saveSequenceRef.current) {
+        return false;
+      }
 
       editingRef.current = false;
       setSaveStatus("saved");
@@ -138,12 +171,18 @@ export default function JournalView({
     }
 
     saveTimerRef.current = setTimeout(async () => {
+      const myRound = ++saveSequenceRef.current;
+
       try {
         await onSave(t, "journal", {
           text: nextText,
           photo,
           prompt,
         });
+
+        if (myRound !== saveSequenceRef.current) {
+          return;
+        }
 
         editingRef.current = false;
         setSaveStatus("saved");
@@ -232,7 +271,12 @@ export default function JournalView({
      Recent journal entries
   -------------------------------- */
 
-  const recent = Object.entries(entries)
+  const recentSource =
+    Object.keys(journalHistory || {}).length > 0
+      ? journalHistory
+      : entries;
+
+  const recent = Object.entries(recentSource)
     .filter(
       ([, value]) =>
         value?.journal?.text ||
@@ -240,8 +284,7 @@ export default function JournalView({
     )
     .sort((a, b) =>
       a[0] < b[0] ? 1 : -1
-    )
-    .slice(0, 8);
+    );
 
   /* --------------------------------
      UI

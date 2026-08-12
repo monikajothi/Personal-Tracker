@@ -30,14 +30,172 @@ export const DEFAULT_CATEGORIES = [
 
 export const COMPANIONS = { cat: ["🐱", "🐶"], dog: ["🐶", "🐱"] };
 
-export const CAT_LINES = [
-  "Meow! 🐱 Don't forget today's check-in~",
-  "You're done for today! Go rest 🌙💗",
-  "*stretches* ...five more minutes of sunbathing 🌤️",
-  "Purrr~ your garden looked lovely today 🌿",
-  "I believe in you. Also I would like a snack.",
-  "Small steps still count. Meow 🐾",
-];
+export function buildCompanionMessage({
+  user,
+  entries = {},
+  todayComplete = false,
+  progressPct = 0,
+} = {}) {
+  const firstName =
+    user?.name?.trim()?.split(/\s+/)[0] || "friend";
+
+  const entryCount = Object.keys(entries || {}).length || 0;
+
+  const name = firstName === "friend" ? "friend" : firstName;
+
+  const lines = [];
+
+  /*
+   * 🌸 TODAY IS COMPLETE
+   */
+  if (todayComplete) {
+    lines.push(
+      `You did it, ${name}! 🌸 Today is officially checked off.`
+    );
+
+    lines.push(
+      `Look at you, ${name} — you showed up for yourself today ✨`
+    );
+
+    lines.push(
+      `${name}, today's little promises to yourself are done. Rest easy 💗`
+    );
+
+    lines.push(
+      `A complete day! 🌷 You don't need to do anything more — enjoy your evening, ${name}.`
+    );
+
+    lines.push(
+      `${name}, that's enough for today. You showed up, and that matters 🌙`
+    );
+  }
+
+  /*
+   * 🌼 ALMOST COMPLETE
+   */
+  else if (progressPct >= 75) {
+    lines.push(
+      `You're almost there, ${name}! 🌼 Just a little more for today.`
+    );
+
+    lines.push(
+      `${name}, look how much you've already done today ✨`
+    );
+
+    lines.push(
+      `75%+ already! 🌱 Finish only if you have the energy, ${name}.`
+    );
+
+    lines.push(
+      `You've got the hardest part done, ${name}. One small step left 💛`
+    );
+
+    lines.push(
+      `${name}, today's little garden is already blooming 🌸`
+    );
+  }
+
+  /*
+   * 🌱 GOOD PROGRESS
+   */
+  else if (progressPct >= 40) {
+    lines.push(
+      `You're making a nice start today, ${name} 🌱`
+    );
+
+    lines.push(
+      `${name}, you've already taken a few good steps for yourself today 💗`
+    );
+
+    lines.push(
+      `No need to rush, ${name}. Keep going at your own pace 🌿`
+    );
+
+    lines.push(
+      `${name}, you're building today's rhythm one little check-in at a time ✨`
+    );
+
+    lines.push(
+      `You're doing better than you think, ${name} 🌷 Keep taking it one thing at a time.`
+    );
+  }
+
+  /*
+   * 🌷 JUST STARTING
+   */
+  else if (progressPct > 0) {
+    lines.push(
+      `You've started, ${name} 🌱 That's what matters.`
+    );
+
+    lines.push(
+      `${name}, one little check-in is still progress 💛`
+    );
+
+    lines.push(
+      `No pressure, ${name}. Pick just one small thing to take care of 🌷`
+    );
+
+    lines.push(
+      `Your day isn't behind, ${name}. There's still plenty of time 🌤️`
+    );
+
+    lines.push(
+      `A tiny step counts too, ${name}. What feels easiest right now? 🌿`
+    );
+  }
+
+  /*
+   * 🌙 NOTHING LOGGED YET
+   */
+  else {
+    lines.push(
+      `Good to see you, ${name} 🌸 Ready for a gentle start?`
+    );
+
+    lines.push(
+      `${name}, today's page is still blank — you can start with just one thing 🌱`
+    );
+
+    lines.push(
+      `No pressure, ${name}. Even one tiny check-in makes today count 💗`
+    );
+
+    lines.push(
+      `Fresh page, fresh start 🌷 What would feel good to take care of first?`
+    );
+
+    lines.push(
+      `Hey ${name} 🌤️ You don't have to do everything. Just start somewhere.`
+    );
+  }
+
+  /*
+   * 🌿 LONG-TERM CONSISTENCY
+   */
+  if (entryCount >= 30) {
+    lines.push(
+      `${name}, you've been keeping track for ${entryCount} days. That's a beautiful habit 🌳`
+    );
+
+    lines.push(
+      `${entryCount} days of showing up, ${name}. That's something to be proud of 💚`
+    );
+  } else if (entryCount >= 14) {
+    lines.push(
+      `${name}, ${entryCount} days tracked already 🌿 You're building something that lasts.`
+    );
+  } else if (entryCount >= 7) {
+    lines.push(
+      `A whole week of tracking, ${name}! 🌸 Keep making this little space yours.`
+    );
+  }
+
+  /*
+   * 🌼 RETURN RANDOM MESSAGE
+   */
+  return lines[Math.floor(Math.random() * lines.length)];
+}
 
 export const todayStr = (d = new Date()) => {
   const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, "0"), day = String(d.getDate()).padStart(2, "0");

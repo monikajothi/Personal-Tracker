@@ -120,7 +120,7 @@ export default function SettingsView({ theme, settings, onChange }) {
   )}
 </Panel>
 
-      <Panel theme={theme}>
+      {/* <Panel theme={theme}>
         <div style={{ fontWeight: 800, marginBottom: 10 }}>🌿 Custom habits</div>
         <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
           <input value={newHabit} onChange={(e) => setNewHabit(e.target.value)} placeholder="e.g. Reading, Meditation…" style={inputStyle(theme)} />
@@ -135,7 +135,7 @@ export default function SettingsView({ theme, settings, onChange }) {
           ))}
           {settings.customHabits.length === 0 && <span style={{ fontSize: 13, opacity: 0.5 }}>None yet — add your own above.</span>}
         </div>
-      </Panel>
+      </Panel> */}
     </div>
   );
 }

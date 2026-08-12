@@ -17,11 +17,13 @@ export const GlobalStyle = () => (
     @keyframes mwt-drift { 0% { transform: translateX(-10vw); } 100% { transform: translateX(110vw); } }
     @keyframes mwt-sway { 0%,100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }
     @keyframes mwt-fadeup { 0% { opacity: 0; transform: translateY(8px);} 100% { opacity: 1; transform: translateY(0);} }
+    @keyframes mwt-fade-down { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(10px); } }
 
     .mwt-anim .mwt-pop { animation: mwt-pop 0.35s ease-out; }
     .mwt-anim .mwt-float { animation: mwt-float 3.5s ease-in-out infinite; }
     .mwt-anim .mwt-sway { animation: mwt-sway 4s ease-in-out infinite; transform-origin: bottom center; }
     .mwt-fadeup { animation: mwt-fadeup 0.4s ease-out; }
+    .mwt-fade-down { animation: mwt-fade-down 0.9s ease-out forwards; }
     
     @keyframes mwt-burst {
   0% { transform: translate(-50%, -50%) rotate(var(--angle)) translateX(0) scale(1); opacity: 1; }

@@ -193,6 +193,14 @@ function TrackerApp() {
     DEFAULT_CATEGORIES.some((c) => c.id === id)
   );
 
+  const doneTodayCount = essentials.filter((id) =>
+    isCategoryDone(id, todayEntry[id])
+  ).length;
+
+  const progressPct = essentials.length
+    ? Math.round((doneTodayCount / essentials.length) * 100)
+    : 0;
+
   const todayComplete =
     essentials.length > 0 &&
     essentials.every((id) =>
@@ -490,6 +498,10 @@ function TrackerApp() {
           settings.animationsOn
         }
         kind={settings.companion}
+        user={user}
+        entries={entries}
+        todayComplete={todayComplete}
+        progressPct={progressPct}
         emojiSet={
           COMPANIONS[
             settings.companion

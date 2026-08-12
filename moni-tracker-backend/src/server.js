@@ -8,6 +8,7 @@ import authRoutes from "./routes/auth.js";
 import entriesRoutes from "./routes/entries.js";
 import settingsRoutes from "./routes/settings.js";
 import analyticsRoutes from "./routes/analytics.js";
+import starsRoutes from "./routes/stars.js";
 
 dotenv.config();
 
@@ -21,6 +22,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/entries", entriesRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use("/api/stars", starsRoutes);
 
 // Central error handler — so a thrown error never crashes the process silently
 app.use((err, req, res, next) => {

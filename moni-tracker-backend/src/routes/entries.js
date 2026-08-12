@@ -28,6 +28,29 @@ router.get("/", async (req, res) => {
   }
 });
 
+// GET /api/entries/journal-history
+// Returns the complete user journal history, independent from the 120-day UI cache.
+router.get("/journal-history", async (req, res) => {
+  try {
+    const entries = await Entry.find({ userId: req.userId }).sort({ date: -1 });
+
+    const byDate = {};
+
+    for (const entry of entries) {
+      if (entry.categories?.journal) {
+        byDate[entry.date] = {
+          journal: entry.categories.journal,
+        };
+      }
+    }
+
+    res.json(byDate);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to load journal history" });
+  }
+});
+
 // GET /api/entries/:date
 router.get("/:date", async (req, res) => {
   try {

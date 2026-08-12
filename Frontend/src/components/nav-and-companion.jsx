@@ -19,7 +19,7 @@ export function Companion({ theme, animationsOn, kind, user, entries, todayCompl
         setMsg(null);
         setClosing(false);
       }, 900);
-    }, 4000);
+    }, 4800);
   };
 
   return (

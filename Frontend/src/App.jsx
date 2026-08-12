@@ -72,6 +72,42 @@ function AppShell() {
    INITIAL LOADING
    ========================================================= */
 
+function LoadingBrand({ size = 58 }) {
+  return (
+    <>
+      <style>{`
+        @keyframes mwt-loading-pulse {
+          0% {
+            transform: scale(0.88);
+            opacity: 0.6;
+          }
+          50% {
+            transform: scale(1.08);
+            opacity: 1;
+          }
+          100% {
+            transform: scale(0.88);
+            opacity: 0.6;
+          }
+        }
+      `}</style>
+
+      <img
+        src="/favicon.png"
+        alt="Loading"
+        style={{
+          width: size,
+          height: size,
+          objectFit: "contain",
+          display: "block",
+          animation: "mwt-loading-pulse 2.8s ease-in-out infinite",
+          filter: "drop-shadow(0 8px 18px rgba(143, 110, 90, 0.18))",
+        }}
+      />
+    </>
+  );
+}
+
 function LoadingScreen() {
   return (
     <div
@@ -81,26 +117,20 @@ function LoadingScreen() {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: 10,
+        gap: 12,
         fontFamily: "sans-serif",
         color: "#888",
         background: "#fffafc",
       }}
     >
-      <div
-        style={{
-          fontSize: 38,
-          animation: "mwt-float 2s ease-in-out infinite",
-        }}
-      >
-        🌱
-      </div>
+      <LoadingBrand size={60} />
 
       <div
         style={{
           fontSize: 13,
           opacity: 0.65,
           fontWeight: 600,
+          letterSpacing: "0.04em",
         }}
       >
         Growing your space…
@@ -119,14 +149,17 @@ function PageLoading({ theme }) {
       style={{
         minHeight: "60vh",
         display: "flex",
+        flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
+        gap: 10,
         color: theme?.ink || "#777",
         fontSize: 14,
         opacity: 0.7,
       }}
     >
-      🌱 Loading…
+      <LoadingBrand size={36} />
+      <span>Loading…</span>
     </div>
   );
 }
@@ -343,7 +376,8 @@ function TrackerApp() {
         background: theme.bg,
         color: theme.ink,
         position: "relative",
-        paddingBottom: 84,
+        minHeight: "100vh",
+        paddingBottom: 28,
       }}
     >
       <GlobalStyle />
@@ -363,10 +397,13 @@ function TrackerApp() {
         }
       >
         <div
+          key={tab}
+          className="mwt-page-shell"
           style={{
-            maxWidth: 480,
+            width: "100%",
+            maxWidth: 560,
             margin: "0 auto",
-            padding: "22px 16px 20px",
+            padding: "8px 10px 8px",
             position: "relative",
             zIndex: 1,
           }}

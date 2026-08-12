@@ -467,24 +467,33 @@ function AllStarsModal({
   onDelete,
 }) {
   const [search, setSearch] = useState("");
+  const [selectedDate, setSelectedDate] = useState("");
   const [filterColor, setFilterColor] =
     useState("all");
 
   const filtered = useMemo(() => {
     return stars.filter((star) => {
+      const text = (star.text || "").toLowerCase();
+      const dateText = formatDate(star.createdAt).toLowerCase();
+      const normalizedSearch = search.toLowerCase();
+
       const matchesText =
-        !search ||
-        star.text
-          .toLowerCase()
-          .includes(search.toLowerCase());
+        !normalizedSearch ||
+        text.includes(normalizedSearch) ||
+        dateText.includes(normalizedSearch);
+
+      const starDate = new Date(star.createdAt);
+      const dateMatch =
+        !selectedDate ||
+        starDate.toISOString().slice(0, 10) === selectedDate;
 
       const matchesColor =
         filterColor === "all" ||
         star.color === filterColor;
 
-      return matchesText && matchesColor;
+      return matchesText && dateMatch && matchesColor;
     });
-  }, [stars, search, filterColor]);
+  }, [stars, search, selectedDate, filterColor]);
 
   return (
     <div className="star-overlay">
@@ -504,14 +513,26 @@ function AllStarsModal({
           {stars.length} folded and kept.
         </div>
 
-        <input
-          value={search}
-          onChange={(e) =>
-            setSearch(e.target.value)
-          }
-          placeholder="🔎 search memories..."
-          className="star-search"
-        />
+        <div className="search-row">
+          <input
+            value={search}
+            onChange={(e) =>
+              setSearch(e.target.value)
+            }
+            placeholder="🔎 search memories..."
+            className="star-search"
+          />
+
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={(e) =>
+              setSelectedDate(e.target.value)
+            }
+            className="date-search"
+            aria-label="Filter by date"
+          />
+        </div>
 
         <div className="filter-row">
           <button
@@ -561,10 +582,6 @@ function AllStarsModal({
                     "--card-bg": c.soft,
                   }}
                 >
-                  <div className="memory-card-star">
-                    ★
-                  </div>
-
                   {star.photoUrl && (
                     <img
                       src={star.photoUrl}
@@ -977,7 +994,7 @@ export default function JournalView() {
   if (loading) {
     return (
       <div className="star-page-loading">
-        ✨ filling your little jar...
+        ✨ Filling your little jar...
       </div>
     );
   }
@@ -986,10 +1003,17 @@ export default function JournalView() {
     <div className="star-jar-page">
       <style>{`
         .star-jar-page {
+          --journal-bg: #f9f1e6;
+          --journal-ink: #332b27;
+          --journal-accent: #3374b8;
+          --journal-panel: rgba(255,255,255,0.12);
+          --journal-glass: rgba(255,255,255,0.4);
           position: relative;
           padding: 8px 0 35px;
           font-family: Georgia, serif;
           overflow: hidden;
+          background: var(--journal-bg);
+          color: var(--journal-ink);
         }
 
         .star-jar-page::before {
@@ -1002,6 +1026,54 @@ export default function JournalView() {
             radial-gradient(circle at 80% 40%, rgba(215,195,225,.18), transparent 30%);
         }
 
+        @media (prefers-color-scheme: dark) {
+          .star-jar-page {
+            --journal-bg: #120f1a;
+            --journal-ink: #f5ecff;
+            --journal-accent: #7ef7ff;
+            --journal-panel: rgba(255,255,255,0.06);
+            --journal-glass: rgba(120, 242, 255, 0.18);
+          }
+
+          .star-jar-page::before {
+            background:
+              radial-gradient(circle at 20% 20%, rgba(86, 227, 255, 0.16), transparent 28%),
+              radial-gradient(circle at 80% 40%, rgba(255, 73, 201, 0.18), transparent 30%);
+          }
+
+          .star-jar-prompt,
+          .all-stars-title,
+          .paper-title {
+            color: #85f7ff !important;
+            text-shadow: 0 0 10px rgba(96, 241, 255, 0.65);
+          }
+
+          .star-search,
+          .date-filter-field input,
+          .filter-row button,
+          .memory-card-actions button,
+          .char-count,
+          .paper-button,
+          .drop-button,
+          .photo-button {
+            box-shadow: inset 0 0 0 1px rgba(126, 247, 255, 0.28), 0 0 12px rgba(126, 247, 255, 0.18);
+          }
+
+          .paper-star span,
+          .memory-card-star,
+          .memory-star {
+            filter: saturate(2.2) brightness(1.4);
+            text-shadow: 0 0 12px rgba(255, 255, 255, 0.42), 0 0 18px rgba(255, 118, 206, 0.35);
+          }
+
+          .torn-paper-tape,
+          .memory-card::before,
+          .paper-button,
+          .drop-button {
+            filter: saturate(1.5) brightness(1.15);
+          }
+        }
+
         .star-jar-header {
           text-align: center;
           position: relative;
@@ -1009,25 +1081,25 @@ export default function JournalView() {
           margin-bottom: 10px;
         }
 
-        .star-jar-prompt {
+        .star-jar-prompt { 
           font-family: "Courier New", monospace;
-          color: #3374b8;
+          color: var(--journal-accent);
           font-size: 23px;
           margin-bottom: 7px;
         }
 
         .star-jar-count {
           font-family: "Courier New", monospace;
-          color: #332b27;
+          color: var(--journal-ink);
           font-size: 13px;
         }
 
         .jar-wrapper {
           display: block;
           position: relative;
-          width: min(310px, 78vw);
-          height: 390px;
-          margin: 15px auto 20px;
+          width: min(260px, 72vw);
+          height: 320px;
+          margin: 12px auto 16px;
           border: 0;
           background: transparent;
           cursor: pointer;
@@ -1052,8 +1124,8 @@ export default function JournalView() {
           top: 2px;
           left: 50%;
           transform: translateX(-50%);
-          width: 150px;
-          height: 42px;
+          width: 130px;
+          height: 34px;
           border: 3px solid rgba(130,130,130,.65);
           border-radius: 12px 12px 8px 8px;
           background: linear-gradient(
@@ -1076,10 +1148,10 @@ export default function JournalView() {
 
         .jar-body {
           position: absolute;
-          top: 34px;
-          bottom: 22px;
-          left: 22px;
-          right: 22px;
+          top: 28px;
+          bottom: 18px;
+          left: 18px;
+          right: 18px;
           border: 3px solid rgba(150,150,150,.42);
           border-radius: 48px 48px 65px 65px;
           background:
@@ -1130,11 +1202,11 @@ export default function JournalView() {
 
         .jar-base {
           position: absolute;
-          bottom: 6px;
+          bottom: 4px;
           left: 50%;
           transform: translateX(-50%);
-          width: 190px;
-          height: 18px;
+          width: 160px;
+          height: 14px;
           border-radius: 50%;
           background: rgba(120,100,90,.12);
           filter: blur(3px);
@@ -1203,19 +1275,19 @@ export default function JournalView() {
         .star-actions {
           position: relative;
           z-index: 3;
-          width: min(330px, 88vw);
+          width: min(280px, 82vw);
           margin: 0 auto;
           display: grid;
-          gap: 10px;
+          gap: 8px;
         }
 
         .paper-button {
           border: 0;
-          padding: 12px 18px;
+          padding: 10px 14px;
           background: #dfbb82;
           color: #4d3826;
           font-family: "Courier New", monospace;
-          font-size: 13px;
+          font-size: 12px;
           cursor: pointer;
           box-shadow: 2px 3px 7px rgba(70,50,30,.15);
           clip-path: polygon(
@@ -1254,93 +1326,32 @@ export default function JournalView() {
           position: fixed;
           inset: 0;
           z-index: 1000;
-          background: rgba(55,45,40,.28);
-          backdrop-filter: blur(4px);
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 20px;
+          padding: 8px;
+          background: rgba(55,45,40,.22);
+          backdrop-filter: blur(3px);
+          -webkit-backdrop-filter: blur(3px);
           overflow: hidden;
         }
 
-        /* =========================================================
-           TORN PAPER
-           ========================================================= */
-
         .torn-paper {
-          --paper: #f8f1f3;
-          --paper-shadow: rgba(65, 48, 38, 0.20);
-
           position: relative;
-          width: min(92vw, 520px);
+          width: min(92vw, 420px);
+          max-height: calc(100dvh - 20px);
           box-sizing: border-box;
-
           background:
-            radial-gradient(
-              circle at 20% 15%,
-              rgba(255,255,255,0.45),
-              transparent 35%
-            ),
-            radial-gradient(
-              circle at 80% 80%,
-              rgba(190,170,160,0.08),
-              transparent 40%
-            ),
-            var(--paper);
-
-          box-shadow:
-            0 18px 35px rgba(55, 42, 35, 0.13),
-            0 4px 10px rgba(55, 42, 35, 0.10);
-
+            radial-gradient(circle at 20% 15%, rgba(255,255,255,.38), transparent 35%),
+            radial-gradient(circle at 85% 80%, rgba(190,170,160,.06), transparent 40%),
+            var(--paper, #f8f1d8);
+          box-shadow: 5px 8px 18px rgba(60,45,35,.16);
           clip-path: polygon(
-            1.8% 2%,
-            8% 1.2%,
-            15% 2.2%,
-            23% 1.3%,
-            31% 2.1%,
-            40% 1.1%,
-            49% 2%,
-            58% 1.2%,
-            67% 2.1%,
-            76% 1.1%,
-            85% 2%,
-            93% 1.2%,
-            98% 6%,
-            97.2% 13%,
-            98.5% 21%,
-            97% 29%,
-            98.2% 37%,
-            97% 45%,
-            98.3% 53%,
-            97% 61%,
-            98.2% 69%,
-            97% 77%,
-            98% 85%,
-            96.5% 94%,
-            90% 96.8%,
-            82% 95.8%,
-            74% 97.2%,
-            66% 96%,
-            57% 97.3%,
-            48% 96.2%,
-            39% 97.1%,
-            30% 96%,
-            21% 97.2%,
-            12% 96%,
-            3% 97%,
-            1.5% 91%,
-            2.8% 83%,
-            1.4% 75%,
-            2.7% 67%,
-            1.5% 59%,
-            2.6% 51%,
-            1.4% 43%,
-            2.7% 35%,
-            1.5% 27%,
-            2.5% 19%,
-            1.3% 11%
+            1% 2%, 8% 1%, 16% 2.2%, 25% 1.2%, 34% 2%, 43% 1%, 52% 2.2%, 61% 1.2%, 70% 2%, 79% 1%, 89% 2%, 98% 1.5%,
+            97% 10%, 98.5% 20%, 97% 30%, 98.3% 40%, 97% 50%, 98% 60%, 97% 70%, 98.2% 80%, 97% 90%, 98% 98%,
+            89% 97%, 80% 98.5%, 70% 97%, 60% 98%, 50% 97%, 40% 98.5%, 30% 97%, 20% 98%, 10% 97%, 2% 98%,
+            1% 90%, 2% 80%, 1% 70%, 2% 60%, 1% 50%, 2% 40%, 1% 30%, 2% 20%, 1% 10%
           );
-
           overflow: visible;
         }
 
@@ -1348,54 +1359,34 @@ export default function JournalView() {
           position: absolute;
           inset: 0;
           pointer-events: none;
-          opacity: 0.32;
-          background-image: radial-gradient(rgba(120, 100, 90, 0.10) 0.6px, transparent 0.7px);
+          opacity: .15;
+          background-image: radial-gradient(rgba(100,80,70,.14) .5px, transparent .7px);
           background-size: 5px 5px;
           mix-blend-mode: multiply;
         }
 
         .torn-paper::after {
-          content: "";
-          position: absolute;
-          inset: 8px;
-          pointer-events: none;
-          background: linear-gradient(90deg, rgba(255,255,255,0.12), transparent 20%, transparent 80%, rgba(100,80,70,0.04));
-          opacity: 0.7;
+          display: none;
         }
 
         .torn-paper-content {
           position: relative;
           z-index: 2;
-          padding: 46px 30px 30px;
+          padding: 12px 18px 12px;
         }
 
         .torn-paper-tape {
           position: absolute;
-          z-index: 5;
-          top: -8px;
+          z-index: 8;
+          top: -5px;
           left: 50%;
-          width: 118px;
-          height: 31px;
+          width: 105px;
+          height: 23px;
           transform: translateX(-50%) rotate(-1deg);
-          opacity: 0.92;
-          box-shadow: 0 2px 5px rgba(70, 50, 30, 0.10);
-          clip-path: polygon(
-            2% 8%,
-            16% 4%,
-            31% 7%,
-            47% 3%,
-            62% 6%,
-            78% 4%,
-            98% 8%,
-            96% 92%,
-            82% 95%,
-            66% 92%,
-            50% 96%,
-            35% 93%,
-            18% 96%,
-            3% 91%
-          );
-          background-image: repeating-linear-gradient(90deg, rgba(255,255,255,0.12) 0, rgba(255,255,255,0.12) 1px, transparent 1px, transparent 4px);
+          opacity: .94;
+          box-shadow: 0 2px 4px rgba(70,50,30,.08);
+          clip-path: polygon(2% 8%, 15% 4%, 28% 7%, 42% 3%, 56% 7%, 70% 4%, 84% 7%, 98% 5%, 97% 93%, 84% 96%, 70% 93%, 56% 97%, 42% 93%, 28% 96%, 14% 93%, 2% 95%);
+          background-image: repeating-linear-gradient(90deg, rgba(255,255,255,.13) 0, rgba(255,255,255,.13) 1px, transparent 1px, transparent 4px);
         }
 
         .torn-modal-backdrop {
@@ -1436,10 +1427,10 @@ export default function JournalView() {
         .memory-paper,
         .share-paper {
           position: relative;
-          width: min(470px, 100%);
-          max-height: 90vh;
+          width: min(300px, 100%);
+          max-height: 68vh;
           overflow: auto;
-          padding: 42px 25px 25px;
+          padding: 18px 14px 14px;
           background: #f5eeee;
           box-shadow: 8px 12px 30px rgba(50,40,30,.2);
           border: 1px solid rgba(150, 125, 105, 0.12);
@@ -1504,38 +1495,38 @@ export default function JournalView() {
 
         .paper-title {
           font-family: Georgia, serif;
-          font-size: 27px;
+          font-size: 22px;
           color: #3e76b6;
           text-align: center;
-          margin-bottom: 10px;
+          margin-bottom: 6px;
         }
 
         .paper-prompt {
           text-align: center;
           font-family: "Courier New", monospace;
-          font-size: 12px;
-          line-height: 1.5;
-          margin-bottom: 15px;
+          font-size: 11px;
+          line-height: 1.4;
+          margin-bottom: 10px;
           color: #4b403b;
         }
 
         .star-textarea {
           width: 100%;
-          min-height: 180px;
+          min-height: 120px;
           resize: vertical;
           box-sizing: border-box;
           border: 0;
           outline: 0;
-          padding: 18px;
+          padding: 12px;
           background:
             repeating-linear-gradient(
               transparent 0,
-              transparent 31px,
-              rgba(90,120,150,.12) 32px
+              transparent 24px,
+              rgba(90,120,150,.12) 25px
             );
           font-family: "Courier New", monospace;
-          font-size: 15px;
-          line-height: 32px;
+          font-size: 14px;
+          line-height: 24px;
           color: #423934;
         }
 
@@ -1615,14 +1606,14 @@ export default function JournalView() {
 
         .drop-button {
           width: 100%;
-          margin-top: 15px;
-          padding: 14px;
+          margin-top: 10px;
+          padding: 10px;
           border: 1px solid #bfa48f;
-          border-radius: 15px;
+          border-radius: 12px;
           background: #eadbcb;
           color: #514238;
           font-family: Georgia, serif;
-          font-size: 15px;
+          font-size: 13px;
           cursor: pointer;
           box-shadow: 3px 5px 10px rgba(70,50,30,.13);
         }
@@ -1646,57 +1637,53 @@ export default function JournalView() {
 
         .memory-text {
           font-family: "Courier New", monospace;
-          font-size: 18px;
-          line-height: 1.7;
+          font-size: 15px;
+          line-height: 1.55;
           color: #443b37;
-          padding: 15px 8px;
+          padding: 10px 6px;
         }
 
         .memory-photo {
           width: 100%;
-          max-height: 300px;
+          max-height: 180px;
           object-fit: cover;
-          border-radius: 12px;
-          margin-top: 10px;
+          border-radius: 10px;
+          margin-top: 8px;
         }
 
         .memory-date {
-          margin-top: 14px;
+          margin-top: 10px;
           font-family: "Courier New", monospace;
           color: #776c65;
-          font-size: 12px;
+          font-size: 11px;
         }
 
         .memory-actions {
           display: flex;
           gap: 8px;
-          margin-top: 20px;
+          margin-top: 12px;
         }
 
         .memory-actions button {
           flex: 1;
-          padding: 10px;
+          padding: 8px 6px;
           border: 0;
           border-radius: 10px;
           background: rgba(255,255,255,.65);
           cursor: pointer;
           font-family: "Courier New", monospace;
-          font-size: 11px;
+          font-size: 10px;
         }
 
         .all-stars-panel {
           position: relative;
-          width: min(850px, 100%);
-          max-height: 90vh;
+          width: min(760px, 100%);
+          max-height: 82vh;
           overflow: auto;
-          padding: 25px;
+          padding: 20px 18px 18px;
           background: #f9f5eb;
           box-shadow: 8px 12px 35px rgba(50,40,30,.2);
           border: 1px solid rgba(120, 105, 90, 0.12);
-          clip-path: polygon(
-            0% 4%, 10% 1%, 18% 6%, 30% 0%, 42% 7%, 54% 1%, 66% 8%, 78% 0%, 90% 6%, 100% 2%,
-            98% 87%, 94% 100%, 83% 94%, 70% 100%, 58% 94%, 42% 100%, 28% 95%, 15% 100%, 5% 95%, 0% 88%
-          );
         }
 
         .panel-back {
@@ -1722,15 +1709,28 @@ export default function JournalView() {
           font-size: 12px;
         }
 
-        .star-search {
+        .search-row {
+          display: grid;
+          grid-template-columns: 1fr 150px;
+          gap: 8px;
+          margin-top: 10px;
+        }
+
+        .star-search,
+        .date-search {
           width: 100%;
           box-sizing: border-box;
-          padding: 12px;
-          border: 1px solid #ddd0c4;
+          padding: 10px 12px;
+          border: 1px solid rgba(127, 103, 81, 0.25);
           border-radius: 10px;
-          background: white;
+          background: rgba(255,255,255,0.74);
           outline: none;
           font-family: "Courier New", monospace;
+          color: var(--journal-ink);
+        }
+
+        .date-search {
+          min-width: 0;
         }
 
         .filter-row {
@@ -1741,12 +1741,13 @@ export default function JournalView() {
         }
 
         .filter-row button {
-          border: 1px solid #ddd0c4;
-          background: #fffaf4;
+          border: 1px solid rgba(127, 103, 81, 0.25);
+          background: rgba(255,255,255,0.7);
           border-radius: 999px;
           padding: 6px 11px;
           cursor: pointer;
           font-family: "Courier New", monospace;
+          color: var(--journal-ink);
         }
 
         .filter-row .filter-active {
@@ -1756,43 +1757,33 @@ export default function JournalView() {
 
         .stars-grid {
           display: grid;
-          grid-template-columns: repeat(2, 1fr);
+          grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 14px;
         }
 
         .memory-card {
           position: relative;
-          padding: 22px 15px 15px;
+          padding: 14px 12px 12px;
           background: var(--card-bg);
           min-height: 140px;
-          box-shadow: 2px 4px 10px rgba(70,50,30,.08);
-          border: 1px solid rgba(140, 116, 93, 0.08);
-          clip-path: polygon(
-            0% 5%, 10% 1%, 18% 7%, 28% 2%, 38% 8%, 48% 1%, 60% 7%, 72% 2%, 84% 8%, 94% 1%, 100% 5%,
-            98% 90%, 92% 100%, 80% 95%, 68% 100%, 56% 94%, 44% 100%, 32% 95%, 20% 100%, 10% 94%, 0% 90%
-          );
+          border-radius: 16px;
+          box-shadow: 0 2px 8px rgba(70,50,30,.08);
+          border: 1px solid rgba(120, 101, 83, 0.12);
         }
 
         .memory-card::before {
-          content: "";
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(135deg, rgba(255,255,255,0.18), transparent 35%, rgba(0,0,0,0.02));
-          pointer-events: none;
+          display: none;
         }
 
-        .memory-card-star {
-          position: absolute;
-          top: 8px;
-          left: 10px;
-          font-size: 17px;
+        .memory-card::after {
+          display: none;
         }
 
         .memory-card img {
           width: 100%;
-          max-height: 140px;
+          max-height: 120px;
           object-fit: cover;
-          border-radius: 8px;
+          border-radius: 10px;
           margin-bottom: 8px;
         }
 
@@ -1800,7 +1791,7 @@ export default function JournalView() {
           font-family: "Courier New", monospace;
           font-size: 13px;
           line-height: 1.5;
-          margin-top: 7px;
+          margin-top: 0;
         }
 
         .memory-card-date {
@@ -1881,6 +1872,61 @@ export default function JournalView() {
             padding-right: 18px;
           }
         }
+          /* =====================================================
+   FINAL MEMORY PAPER FIX — NO GAP
+   ===================================================== */
+
+.memory-paper {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  overflow: visible !important;
+}
+
+/* Remove the extra inner space */
+.memory-paper .torn-paper-content {
+  padding: 7px 18px 10px !important;
+}
+
+/* ⭐ Put the star immediately below the tape */
+.memory-paper .memory-star {
+  margin: 0 !important;
+  padding: 0 !important;
+
+  font-size: 34px;
+  line-height: 1;
+
+  transform: translateY(6px);
+}
+
+/* Text should sit immediately below star */
+.memory-paper .memory-text {
+  margin: 3px 0 0 !important;
+  padding: 0 4px !important;
+
+  line-height: 1.45;
+}
+
+/* Photo close to text */
+.memory-paper .memory-photo {
+  margin: 7px auto 0 !important;
+}
+
+/* Date close to photo */
+.memory-paper .memory-date {
+  margin: 6px 0 0 !important;
+}
+
+/* Buttons close to date */
+.memory-paper .memory-actions {
+  margin: 7px 0 0 !important;
+  gap: 6px;
+}
+
+/* Remove the OLD fake torn overlays */
+.memory-paper::before,
+.memory-paper::after {
+  display: none !important;
+}
       `}</style>
 
       <SectionTitle

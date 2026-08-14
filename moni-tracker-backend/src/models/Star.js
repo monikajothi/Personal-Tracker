@@ -56,7 +56,6 @@ starSchema.index(
   { userId: 1, legacyEntryId: 1 },
   {
     unique: true,
-    partialFilterExpression: { legacyEntryId: { $exists: true, $ne: null } },
   }
 );
 

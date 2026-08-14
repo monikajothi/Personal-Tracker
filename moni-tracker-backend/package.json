@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
-    "migrate:journals": "node scripts/migrateJournalsToStars.js"
+    "migrate:journals": "node scripts/migrateJournalsToStars.js",
+    "db:drop-stars-index": "node scripts/drop-stars-index.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

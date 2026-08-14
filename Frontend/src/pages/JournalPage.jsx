@@ -904,27 +904,273 @@ export default function JournalView({ theme }) {
 
         .color-row {
           display: flex;
-          gap: 10px;
+          gap: 8px;
           justify-content: center;
           flex-wrap: wrap;
         }
 
-        .color-choice {
-          width: 44px;
-          height: 44px;
-          border: 2px solid transparent;
-          border-radius: 50%;
-          background: var(--choice);
-          color: white;
-          font-size: 22px;
-          cursor: pointer;
-          filter: drop-shadow(1px 2px 2px rgba(0,0,0,.15));
-        }
+        /* ✨ Animated star choices */
+.color-choice {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--choice);
+  font-size: 27px;
+  line-height: 1;
+  cursor: pointer;
 
-        .color-choice.selected {
-          border-color: #4c403a;
-          transform: scale(1.12);
-        }
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  filter:
+    drop-shadow(0 0 3px var(--choice))
+    drop-shadow(0 0 6px rgba(255,255,255,.35));
+
+  animation:
+    star-twinkle 2.2s ease-in-out infinite,
+    star-float 3s ease-in-out infinite;
+
+  transition:
+    transform .25s ease,
+    filter .25s ease;
+}
+.color-choice:nth-child(2).selected::before {
+  animation-delay: .3s;
+}
+
+.color-choice:nth-child(3).selected::before {
+  animation-delay: .7s;
+}
+
+.color-choice:nth-child(4).selected::before {
+  animation-delay: 1.1s;
+}
+
+.color-choice:nth-child(5).selected::before {
+  animation-delay: 1.5s;
+}
+
+.color-choice:nth-child(6).selected::before {
+  animation-delay: 1.9s;
+}
+  
+/* ✨ Different timing = stars don't blink together */
+.color-choice:nth-child(2) {
+  animation-delay: .35s;
+}
+
+.color-choice:nth-child(3) {
+  animation-delay: .7s;
+}
+
+.color-choice:nth-child(4) {
+  animation-delay: 1.05s;
+}
+
+.color-choice:nth-child(5) {
+  animation-delay: 1.4s;
+}
+
+.color-choice:nth-child(6) {
+  animation-delay: 1.75s;
+}
+
+
+/* 🌟 Gentle blinking + glowing */
+@keyframes star-twinkle {
+  0%,
+  100% {
+    opacity: .65;
+    filter:
+      drop-shadow(0 0 2px var(--choice))
+      drop-shadow(0 0 4px rgba(255,255,255,.25));
+  }
+
+  45% {
+    opacity: 1;
+    filter:
+      drop-shadow(0 0 4px var(--choice))
+      drop-shadow(0 0 9px var(--choice))
+      drop-shadow(0 0 14px rgba(255,255,255,.45));
+  }
+
+  55% {
+    opacity: .82;
+  }
+
+  65% {
+    opacity: 1;
+    filter:
+      drop-shadow(0 0 5px var(--choice))
+      drop-shadow(0 0 12px var(--choice))
+      drop-shadow(0 0 18px rgba(255,255,255,.5));
+  }
+}
+
+
+/* 🌙 Tiny floating movement */
+@keyframes star-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-3deg) scale(1);
+  }
+
+  50% {
+    transform: translateY(-3px) rotate(3deg) scale(1.05);
+  }
+}
+
+
+/* 💫 Little sparkle dots around every star */
+.color-choice::before,
+.color-choice::after {
+  content: "✦";
+  position: absolute;
+  font-size: 8px;
+  color: #fff;
+  pointer-events: none;
+
+  opacity: 0;
+  transform: scale(.3);
+}
+
+/* Left sparkle */
+.color-choice::before {
+  top: 3px;
+  left: 2px;
+  animation: mini-sparkle 2.4s ease-in-out infinite;
+}
+
+/* Right sparkle */
+.color-choice::after {
+  right: 1px;
+  bottom: 4px;
+  font-size: 6px;
+  animation: mini-sparkle 2.4s ease-in-out infinite .8s;
+}
+
+
+@keyframes mini-sparkle {
+  0%,
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(.3) rotate(0deg);
+  }
+
+  78% {
+    opacity: 1;
+    transform: scale(1.2) rotate(20deg);
+  }
+
+  86% {
+    opacity: .8;
+    transform: scale(.8) rotate(45deg);
+  }
+
+  92% {
+    opacity: 0;
+    transform: scale(.3) rotate(70deg);
+  }
+}
+
+
+/* ⭐ Selected star */
+.color-choice.selected {
+  transform: scale(1.18);
+  
+  filter:
+    drop-shadow(0 0 5px var(--choice))
+    drop-shadow(0 0 12px var(--choice))
+    drop-shadow(0 0 20px rgba(255,255,255,.65));
+
+  animation:
+    selected-star-glow 1.4s ease-in-out infinite;
+}
+
+
+/* 🌟🌟 INTENSE MAGICAL SELECTED STAR */
+@keyframes selected-star-glow {
+  0%,
+  100% {
+    transform: scale(1.12) rotate(-3deg);
+
+    filter:
+      drop-shadow(0 0 5px var(--choice))
+      drop-shadow(0 0 12px var(--choice))
+      drop-shadow(0 0 22px var(--choice))
+      drop-shadow(0 0 32px rgba(255,255,255,.45));
+  }
+
+  20% {
+    transform: scale(1.22) rotate(3deg);
+
+    filter:
+      drop-shadow(0 0 7px var(--choice))
+      drop-shadow(0 0 16px var(--choice))
+      drop-shadow(0 0 28px var(--choice))
+      drop-shadow(0 0 40px rgba(255,255,255,.65));
+  }
+
+  35% {
+    transform: scale(1.30) rotate(-5deg);
+
+    filter:
+      drop-shadow(0 0 9px var(--choice))
+      drop-shadow(0 0 20px var(--choice))
+      drop-shadow(0 0 35px var(--choice))
+      drop-shadow(0 0 50px rgba(255,255,255,.8));
+  }
+
+  50% {
+    transform: scale(1.16) rotate(4deg);
+
+    filter:
+      drop-shadow(0 0 4px var(--choice))
+      drop-shadow(0 0 10px var(--choice))
+      drop-shadow(0 0 20px var(--choice));
+  }
+
+  65% {
+    transform: scale(1.32) rotate(-3deg);
+
+    filter:
+      drop-shadow(0 0 10px var(--choice))
+      drop-shadow(0 0 24px var(--choice))
+      drop-shadow(0 0 42px var(--choice))
+      drop-shadow(0 0 60px rgba(255,255,255,.9));
+  }
+
+  80% {
+    transform: scale(1.20) rotate(3deg);
+
+    filter:
+      drop-shadow(0 0 7px var(--choice))
+      drop-shadow(0 0 18px var(--choice))
+      drop-shadow(0 0 32px var(--choice))
+      drop-shadow(0 0 45px rgba(255,255,255,.65));
+  }
+}
+
+
+/* ✨ Hover */
+.color-choice:hover {
+  transform: scale(1.2) rotate(8deg);
+  filter:
+    drop-shadow(0 0 5px var(--choice))
+    drop-shadow(0 0 14px var(--choice))
+    drop-shadow(0 0 22px rgba(255,255,255,.6));
+}
+
+
+/* ⭐ Press */
+.color-choice:active {
+  transform: scale(.9);
+}
 
         .photo-button {
           display: block;
@@ -1219,7 +1465,7 @@ export default function JournalView({ theme }) {
       <div className="star-actions">
         <button className="paper-button" onClick={() => setShowAdd(true)}>+ add a star</button>
         <button className="paper-button" onClick={() => setShowAll(true)}>★ view all stars</button>
-        <button className="paper-button" onClick={() => setShowShare(true)}>🔗 share jar</button>
+        {/* <button className="paper-button" onClick={() => setShowShare(true)}>🔗 share jar</button> */}
       </div>
 
       {showAdd && <AddStarModal onClose={() => setShowAdd(false)} onCreated={addStar} />}

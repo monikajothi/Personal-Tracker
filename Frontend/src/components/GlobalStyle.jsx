@@ -64,5 +64,228 @@ export const GlobalStyle = () => (
 .mwt-cycle-history-scroll::-webkit-scrollbar-thumb:hover {
   background: rgba(180, 130, 150, 0.48);
 }
+
+/* =========================================================
+   GLOBAL RESPONSIVE APP LAYOUT
+   ========================================================= */
+
+html,
+body,
+#root {
+  width: 100%;
+  min-width: 0;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  overflow-x: hidden;
+}
+
+body {
+  overflow-x: hidden;
+  min-width: 0;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* =========================================================
+   APP ROOT
+   ========================================================= */
+
+.mwt {
+  width: 100%;
+  min-width: 0;
+  min-height: 100dvh;
+
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow-x: hidden;
+}
+
+/* =========================================================
+   MAIN PAGE AREA
+
+   IMPORTANT:
+   BottomNav is position: fixed, so it does NOT occupy
+   normal document space.
+
+   Therefore we reserve space for it here.
+   ========================================================= */
+
+.tracker-page {
+  width: 100%;
+  min-width: 0;
+
+  flex: 1 1 auto;
+
+  display: flex;
+  flex-direction: column;
+
+  /*
+    TOP
+    LEFT / RIGHT
+    BOTTOM = space for fixed navigation
+  */
+  padding:
+    16px
+    clamp(14px, 3vw, 32px)
+    calc(104px + env(safe-area-inset-bottom))
+    clamp(14px, 3vw, 32px);
+
+  margin: 0;
+
+  overflow-x: hidden;
+}
+
+/* Every actual page is allowed to shrink */
+.tracker-page > * {
+  width: 100%;
+  min-width: 0;
+  max-width: 1200px;
+
+  margin-left: auto;
+  margin-right: auto;
+
+  /* Make each page fill available vertical space and distribute
+     its internal sections evenly (top → middle → bottom) so pages
+     appear centered and balanced on different screen heights. */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+/* =========================================================
+   IMAGES / MEDIA
+   ========================================================= */
+
+.mwt img,
+.tracker-page img {
+  max-width: 100%;
+}
+
+/* =========================================================
+   RESPONSIVE WIDTHS
+   ========================================================= */
+
+/* Small phones */
+@media (max-width: 380px) {
+
+  .tracker-page {
+    padding:
+      12px
+      10px
+      calc(96px + env(safe-area-inset-bottom))
+      10px;
+  }
+}
+
+/* Normal phones */
+@media (min-width: 381px) and (max-width: 600px) {
+
+  .tracker-page {
+    padding:
+      14px
+      14px
+      calc(100px + env(safe-area-inset-bottom))
+      14px;
+  }
+}
+
+/* Large phones / small tablets */
+@media (min-width: 601px) and (max-width: 900px) {
+
+  .tracker-page {
+    padding:
+      20px
+      24px
+      calc(110px + env(safe-area-inset-bottom))
+      24px;
+  }
+}
+
+/* Tablet / desktop */
+@media (min-width: 901px) {
+
+  .tracker-page {
+    padding:
+      24px
+      32px
+      calc(110px + env(safe-area-inset-bottom))
+      32px;
+  }
+}
+
+/* =========================================================
+   SHORT SCREEN PROTECTION
+
+   Important for landscape phones and short Android screens.
+   ========================================================= */
+
+@media (max-height: 700px) {
+
+  .tracker-page {
+    padding-top: 10px;
+
+    padding-bottom:
+      calc(92px + env(safe-area-inset-bottom));
+  }
+}
+
+/* =========================================================
+   VERY TALL SCREEN
+
+   Don't stretch individual cards.
+   Just give the page breathing room.
+   ========================================================= */
+
+@media (min-height: 850px) and (max-width: 600px) {
+
+  .tracker-page {
+    padding-top: 18px;
+  }
+}
+
+/* =========================================================
+   MODAL / OVERFLOW SAFETY
+   ========================================================= */
+
+.mwt button,
+.mwt input,
+.mwt textarea,
+.mwt select {
+  max-width: 100%;
+}
+
+.mwt textarea {
+  resize: vertical;
+}
+
+/* =========================================================
+   HORIZONTAL SCROLL CONTAINERS
+   ========================================================= */
+
+.mwt-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* =========================================================
+   FIXED DECORATIONS MUST NEVER CREATE PAGE SPACE
+   ========================================================= */
+
+.mwt [style*="position: fixed"] {
+  max-width: 100vw;
+}
   `}</style>
 );

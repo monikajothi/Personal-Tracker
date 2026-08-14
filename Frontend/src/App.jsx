@@ -367,19 +367,18 @@ function TrackerApp() {
 
   return (
     <div
-      className={`mwt ${
-        settings.animationsOn
-          ? "mwt-anim"
-          : ""
-      }`}
-      style={{
-        background: theme.bg,
-        color: theme.ink,
-        position: "relative",
-        minHeight: "100vh",
-        paddingBottom: 28,
-      }}
-    >
+  className={`mwt ${settings.animationsOn ? "mwt-anim" : ""}`}
+  style={{
+    minHeight: "100dvh",
+    width: "100%",
+    background: theme.bg,
+    color: theme.ink,
+    position: "relative",
+    display: "flex",
+    flexDirection: "column",
+    overflowX: "hidden",
+  }}
+>
       <GlobalStyle />
 
       <FloatingDecor
@@ -391,83 +390,62 @@ function TrackerApp() {
           PAGE CONTENT
           =================================================== */}
 
-      <Suspense
-        fallback={
-          <PageLoading theme={theme} />
-        }
-      >
-        <div
-          key={tab}
-          className="mwt-page-shell"
-          style={{
-            width: "100%",
-            maxWidth: 560,
-            margin: "0 auto",
-            padding: "8px 10px 8px",
-            position: "relative",
-            zIndex: 1,
-          }}
-        >
-          {tab === "home" && (
-            <Dashboard
-              theme={theme}
-              entries={entries}
-              settings={settings}
-              animationsOn={
-                settings.animationsOn
-              }
-              onOpenCategory={
-                openCategory
-              }
-              onOpenHabit={openHabit}
-            />
-          )}
+      <Suspense fallback={<PageLoading theme={theme} />}>
+  <div className="tracker-page">
+    {tab === "home" && (
+      <Dashboard
+        theme={theme}
+        entries={entries}
+        settings={settings}
+        animationsOn={settings.animationsOn}
+        onOpenCategory={openCategory}
+        onOpenHabit={openHabit}
+      />
+    )}
 
-          {tab === "calendar" && (
-            <CalendarView
-              theme={theme}
-              entries={entries}
-              essentials={essentials}
-              onSelectDay={openDay}
-              cycleEnabled={
-                cycleEnabled
-              }
-            />
-          )}
+    {tab === "calendar" && (
+      <CalendarView
+        theme={theme}
+        entries={entries}
+        essentials={essentials}
+        onSelectDay={openDay}
+        cycleEnabled={cycleEnabled}
+      />
+    )}
 
-          {tab === "insights" && (
-            <AnalyticsView
-              theme={theme}
-              entries={entries}
-              cycleEnabled={
-                cycleEnabled
-              }
-            />
-          )}
+    {tab === "insights" && (
+      <AnalyticsView
+        theme={theme}
+        entries={entries}
+        cycleEnabled={cycleEnabled}
+      />
+    )}
 
-          {tab === "journal" && (
-            <JournalView />
-          )}
+    {tab === "journal" && (
+      <JournalView
+        theme={theme}
+        entries={entries}
+        onSave={saveCategory}
+      />
+    )}
 
-          {tab === "garden" && (
-            <GardenView
-              theme={theme}
-              entries={entries}
-              animationsOn={
-                settings.animationsOn
-              }
-            />
-          )}
+    {tab === "garden" && (
+      <GardenView
+        theme={theme}
+        entries={entries}
+        animationsOn={settings.animationsOn}
+      />
+    )}
 
-          {tab === "settings" && (
-            <SettingsView
-              theme={theme}
-              settings={settings}
-              onChange={saveSettings}
-            />
-          )}
-        </div>
-      </Suspense>
+    {tab === "settings" && (
+      <SettingsView
+        theme={theme}
+        settings={settings}
+        onChange={saveSettings}
+      />
+    )}
+  </div>
+</Suspense>
 
       {/* ===================================================
           DAY DETAIL

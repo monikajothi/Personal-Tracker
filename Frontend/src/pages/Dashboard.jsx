@@ -70,7 +70,7 @@ export default function Dashboard({ theme, entries, settings, onOpenCategory, on
       ? `Good evening, ${name} 🌆`
       : `Winding down, ${name}? 🌙`;
   return (
-    <div>
+    <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", height: "100%" }}>
       <div style={{ marginBottom: 18 }}>
         <div className="font-display" style={{ fontSize: 26, fontWeight: 600, color: theme.ink }}>{greeting}</div>
         <div style={{ fontSize: 13.5, opacity: 0.6, marginTop: 2 }}>{fmtNiceDate(t)}</div>

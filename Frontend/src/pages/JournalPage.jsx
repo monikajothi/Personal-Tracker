@@ -10,41 +10,11 @@ import { starsApi } from "../api/index.js";
 import { resizeImageFile } from "../utils/image.js";
 
 const STAR_COLORS = [
-  {
-    id: "pink",
-    color: "#ef9caf",
-    soft: "#fbe1e7",
-    label: "Pink",
-    emoji: "🌸",
-  },
-  {
-    id: "sage",
-    color: "#a9c6a2",
-    soft: "#e4eee1",
-    label: "Sage",
-    emoji: "🌿",
-  },
-  {
-    id: "blue",
-    color: "#94bfe1",
-    soft: "#e1eef8",
-    label: "Blue",
-    emoji: "💙",
-  },
-  {
-    id: "yellow",
-    color: "#e6c86f",
-    soft: "#faf1c9",
-    label: "Yellow",
-    emoji: "💛",
-  },
-  {
-    id: "purple",
-    color: "#bca6d4",
-    soft: "#eee5f5",
-    label: "Purple",
-    emoji: "💜",
-  },
+  { id: "pink", color: "#ef9caf", soft: "#fbe1e7", label: "Pink", emoji: "🌸" },
+  { id: "sage", color: "#a9c6a2", soft: "#e4eee1", label: "Sage", emoji: "🌿" },
+  { id: "blue", color: "#94bfe1", soft: "#e1eef8", label: "Blue", emoji: "💙" },
+  { id: "yellow", color: "#e6c86f", soft: "#faf1c9", label: "Yellow", emoji: "💛" },
+  { id: "purple", color: "#bca6d4", soft: "#eee5f5", label: "Purple", emoji: "💜" },
 ];
 
 const PROMPTS = [
@@ -58,10 +28,7 @@ const PROMPTS = [
 ];
 
 function getColor(id) {
-  return (
-    STAR_COLORS.find((c) => c.id === id) ||
-    STAR_COLORS[0]
-  );
+  return STAR_COLORS.find((c) => c.id === id) || STAR_COLORS[0];
 }
 
 function formatDate(date) {
@@ -72,14 +39,8 @@ function formatDate(date) {
   }).format(new Date(date));
 }
 
-function PaperStar({
-  color = "pink",
-  style = {},
-  className = "",
-  onClick,
-}) {
+function PaperStar({ color = "pink", style = {}, className = "", onClick }) {
   const c = getColor(color);
-
   return (
     <span
       className={`paper-star ${className}`}
@@ -87,19 +48,12 @@ function PaperStar({
       role="button"
       tabIndex={0}
       onKeyDown={(event) => {
-        if (
-          event.key === "Enter" ||
-          event.key === " "
-        ) {
+        if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
           onClick?.(event);
         }
       }}
-      style={{
-        ...style,
-        "--star-color": c.color,
-        "--star-soft": c.soft,
-      }}
+      style={{ ...style, "--star-color": c.color, "--star-soft": c.soft }}
       aria-label="Memory star"
     >
       <span>★</span>
@@ -107,68 +61,24 @@ function PaperStar({
   );
 }
 
-function TornPaper({
-  children,
-  className = "",
-  style = {},
-  tape = true,
-  tapeColor = "#d9ad5b",
-}) {
+function TornPaper({ children, className = "", style = {}, tape = true, tapeColor = "#d9ad5b" }) {
   return (
-    <div
-      className={`torn-paper ${className}`}
-      style={style}
-    >
+    <div className={`torn-paper ${className}`} style={style}>
       <div className="torn-paper-texture" />
-
-      {tape && (
-        <div
-          className="torn-paper-tape"
-          style={{
-            background: tapeColor,
-          }}
-        />
-      )}
-
-      <div className="torn-paper-content">
-        {children}
-      </div>
+      {tape && <div className="torn-paper-tape" style={{ background: tapeColor }} />}
+      <div className="torn-paper-content">{children}</div>
     </div>
   );
 }
 
-function Jar({
-  stars,
-  onTap,
-  dropping,
-}) {
+function Jar({ stars, onTap, dropping }) {
   const visibleStars = stars.slice(0, 24);
 
   const positions = [
-    [21, 67, -12],
-    [43, 72, 8],
-    [65, 67, -6],
-    [31, 53, 14],
-    [54, 52, -15],
-    [73, 50, 10],
-    [20, 43, 8],
-    [45, 39, -10],
-    [65, 39, 14],
-    [35, 29, -5],
-    [56, 28, 9],
-    [74, 31, -12],
-    [28, 20, 15],
-    [47, 19, -8],
-    [66, 21, 6],
-    [38, 12, -14],
-    [57, 11, 10],
-    [75, 14, -5],
-    [25, 59, 5],
-    [58, 61, -10],
-    [37, 44, 11],
-    [70, 42, -8],
-    [48, 61, 5],
-    [62, 26, -10],
+    [21, 67, -12], [43, 72, 8], [65, 67, -6], [31, 53, 14], [54, 52, -15], [73, 50, 10],
+    [20, 43, 8], [45, 39, -10], [65, 39, 14], [35, 29, -5], [56, 28, 9], [74, 31, -12],
+    [28, 20, 15], [47, 19, -8], [66, 21, 6], [38, 12, -14], [57, 11, 10], [75, 14, -5],
+    [25, 59, 5], [58, 61, -10], [37, 44, 11], [70, 42, -8], [48, 61, 5], [62, 26, -10],
   ];
 
   return (
@@ -176,10 +86,7 @@ function Jar({
       className="jar-wrapper"
       onClick={onTap}
       onKeyDown={(event) => {
-        if (
-          event.key === "Enter" ||
-          event.key === " "
-        ) {
+        if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
           onTap?.(event);
         }
@@ -190,17 +97,13 @@ function Jar({
       style={{ cursor: "pointer" }}
     >
       <div className="jar-glow" />
-
       <div className="jar-lid">
         <div className="jar-lid-lines" />
       </div>
-
       <div className="jar-body">
         <div className="jar-shine" />
-
         {visibleStars.map((star, index) => {
           const p = positions[index % positions.length];
-
           return (
             <PaperStar
               key={star._id}
@@ -214,42 +117,29 @@ function Jar({
             />
           );
         })}
-
-        {stars.length === 0 && (
-          <div className="empty-jar-heart">
-            ✦
-          </div>
-        )}
+        {stars.length === 0 && <div className="empty-jar-heart">✦</div>}
       </div>
-
       <div className="jar-base" />
     </div>
   );
 }
 
-function AddStarModal({
-  onClose,
-  onCreated,
-}) {
+function AddStarModal({ onClose, onCreated }) {
   const [text, setText] = useState("");
   const [color, setColor] = useState("pink");
   const [photo, setPhoto] = useState(null);
   const [preview, setPreview] = useState(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-
   const fileRef = useRef(null);
 
   const handlePhoto = (event) => {
     const file = event.target.files?.[0];
-
     if (!file) return;
-
     if (file.size > 10 * 1024 * 1024) {
       setError("Please choose a photo smaller than 10 MB.");
       return;
     }
-
     setPhoto(file);
     setPreview(URL.createObjectURL(file));
   };
@@ -259,32 +149,18 @@ function AddStarModal({
       setError("Write one little memory first 🌱");
       return;
     }
-
     try {
       setSaving(true);
       setError("");
-
       let photoUrl = null;
-
       if (photo) {
-        photoUrl = await resizeImageFile(photo, {
-          maxWidth: 1200,
-          quality: 0.72,
-        });
+        photoUrl = await resizeImageFile(photo, { maxWidth: 1200, quality: 0.72 });
       }
-
-      const star = await starsApi.create({
-        text: text.trim(),
-        color,
-        photoUrl,
-      });
-
+      const star = await starsApi.create({ text: text.trim(), color, photoUrl });
       onCreated(star);
     } catch (err) {
       console.error(err);
-      setError(
-        err.message || "Couldn't save your star."
-      );
+      setError(err.message || "Couldn't save your star.");
     } finally {
       setSaving(false);
     }
@@ -293,54 +169,28 @@ function AddStarModal({
   return (
     <div className="star-overlay">
       <TornPaper className="paper-modal torn-paper-modal">
-        <button
-          className="paper-close"
-          onClick={onClose}
-        >
-          ×
-        </button>
-
-        <div className="paper-title">
-          add a star
-        </div>
-
-        <div className="paper-prompt">
-          {PROMPTS[
-            new Date().getDate() %
-              PROMPTS.length
-          ]}
-        </div>
+        <button className="paper-close" onClick={onClose}>×</button>
+        <div className="paper-title">add a star</div>
+        <div className="paper-prompt">{PROMPTS[new Date().getDate() % PROMPTS.length]}</div>
 
         <textarea
           autoFocus
           value={text}
-          onChange={(e) =>
-            setText(e.target.value)
-          }
+          onChange={(e) => setText(e.target.value)}
           maxLength={1000}
           placeholder="Write a little moment..."
           className="star-textarea"
         />
+        <div className="character-count">{text.length}/1000</div>
 
-        <div className="character-count">
-          {text.length}/1000
-        </div>
-
-        <div className="color-title">
-          choose your star
-        </div>
-
+        <div className="color-title">choose your star</div>
         <div className="color-row">
           {STAR_COLORS.map((c) => (
             <button
               key={c.id}
               onClick={() => setColor(c.id)}
-              className={`color-choice ${
-                color === c.id ? "selected" : ""
-              }`}
-              style={{
-                "--choice": c.color,
-              }}
+              className={`color-choice ${color === c.id ? "selected" : ""}`}
+              style={{ "--choice": c.color }}
             >
               ★
             </button>
@@ -349,127 +199,48 @@ function AddStarModal({
 
         {preview && (
           <div className="photo-preview">
-            <img
-              src={preview}
-              alt=""
-            />
-
-            <button
-              onClick={() => {
-                setPhoto(null);
-                setPreview(null);
-              }}
-            >
-              ×
-            </button>
+            <img src={preview} alt="" />
+            <button onClick={() => { setPhoto(null); setPreview(null); }}>×</button>
           </div>
         )}
 
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/*"
-          hidden
-          onChange={handlePhoto}
-        />
+        <input ref={fileRef} type="file" accept="image/*" hidden onChange={handlePhoto} />
+        <button className="photo-button" onClick={() => fileRef.current?.click()}>📷 add a picture</button>
 
-        <button
-          className="photo-button"
-          onClick={() =>
-            fileRef.current?.click()
-          }
-        >
-          📷 add a picture
-        </button>
+        {error && <div className="star-error">{error}</div>}
 
-        {error && (
-          <div className="star-error">
-            {error}
-          </div>
-        )}
-
-        <button
-          className="drop-button"
-          disabled={saving}
-          onClick={submit}
-        >
-          {saving
-            ? "folding your star..."
-            : "⭐ drop it in the jar"}
+        <button className="drop-button" disabled={saving} onClick={submit}>
+          {saving ? "folding your star..." : "⭐ drop it in the jar"}
         </button>
       </TornPaper>
     </div>
   );
 }
 
-function MemoryModal({
-  star,
-  onClose,
-  onAnother,
-}) {
+function MemoryModal({ star, onClose, onAnother }) {
   if (!star) return null;
-
   const c = getColor(star.color);
 
   return (
     <div className="star-overlay">
-      <TornPaper
-        className="memory-paper torn-paper-modal"
-        style={{
-          "--paper-color": c.soft,
-        }}
-      >
-        <div className="memory-star">
-          ★
-        </div>
-
-        <button
-          className="paper-close"
-          onClick={onClose}
-        >
-          ×
-        </button>
-
-        <div className="memory-text">
-          “{star.text}”
-        </div>
-
-        {star.photoUrl && (
-          <img
-            className="memory-photo"
-            src={star.photoUrl}
-            alt=""
-          />
-        )}
-
-        <div className="memory-date">
-          {formatDate(star.createdAt)}
-        </div>
-
+      <TornPaper className="memory-paper torn-paper-modal" style={{ "--paper-color": c.soft }}>
+        <button className="paper-close" onClick={onClose}>×</button>
+        <div className="memory-text">"{star.text}"</div>
+        {star.photoUrl && <img className="memory-photo" src={star.photoUrl} alt="" />}
+        <div className="memory-date">{formatDate(star.createdAt)}</div>
         <div className="memory-actions">
-          <button onClick={onClose}>
-            ↩ tuck it back
-          </button>
-
-          <button onClick={onAnother}>
-            ⭐ unfold another
-          </button>
+          <button onClick={onClose}>↩ tuck it back</button>
+          <button onClick={onAnother}>⭐ unfold another</button>
         </div>
       </TornPaper>
     </div>
   );
 }
 
-function AllStarsModal({
-  stars,
-  onClose,
-  onEdit,
-  onDelete,
-}) {
+function AllStarsModal({ stars, onClose, onEdit, onDelete }) {
   const [search, setSearch] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
-  const [filterColor, setFilterColor] =
-    useState("all");
+  const [filterColor, setFilterColor] = useState("all");
 
   const filtered = useMemo(() => {
     return stars.filter((star) => {
@@ -484,12 +255,9 @@ function AllStarsModal({
 
       const starDate = new Date(star.createdAt);
       const dateMatch =
-        !selectedDate ||
-        starDate.toISOString().slice(0, 10) === selectedDate;
+        !selectedDate || starDate.toISOString().slice(0, 10) === selectedDate;
 
-      const matchesColor =
-        filterColor === "all" ||
-        star.color === filterColor;
+      const matchesColor = filterColor === "all" || star.color === filterColor;
 
       return matchesText && dateMatch && matchesColor;
     });
@@ -498,37 +266,21 @@ function AllStarsModal({
   return (
     <div className="star-overlay">
       <TornPaper className="all-stars-panel torn-paper-modal">
-        <button
-          className="panel-back"
-          onClick={onClose}
-        >
-          ← back to jar
-        </button>
-
-        <div className="all-stars-title">
-          your paper stars
-        </div>
-
-        <div className="all-stars-count">
-          {stars.length} folded and kept.
-        </div>
+        <button className="panel-back" onClick={onClose}>← back to jar</button>
+        <div className="all-stars-title">your paper stars</div>
+        <div className="all-stars-count">{stars.length} folded and kept.</div>
 
         <div className="search-row">
           <input
             value={search}
-            onChange={(e) =>
-              setSearch(e.target.value)
-            }
+            onChange={(e) => setSearch(e.target.value)}
             placeholder="🔎 search memories..."
             className="star-search"
           />
-
           <input
             type="date"
             value={selectedDate}
-            onChange={(e) =>
-              setSelectedDate(e.target.value)
-            }
+            onChange={(e) => setSelectedDate(e.target.value)}
             className="date-search"
             aria-label="Filter by date"
           />
@@ -536,29 +288,16 @@ function AllStarsModal({
 
         <div className="filter-row">
           <button
-            className={
-              filterColor === "all"
-                ? "filter-active"
-                : ""
-            }
-            onClick={() =>
-              setFilterColor("all")
-            }
+            className={filterColor === "all" ? "filter-active" : ""}
+            onClick={() => setFilterColor("all")}
           >
             all
           </button>
-
           {STAR_COLORS.map((c) => (
             <button
               key={c.id}
-              className={
-                filterColor === c.id
-                  ? "filter-active"
-                  : ""
-              }
-              onClick={() =>
-                setFilterColor(c.id)
-              }
+              className={filterColor === c.id ? "filter-active" : ""}
+              onClick={() => setFilterColor(c.id)}
             >
               {c.emoji}
             </button>
@@ -566,53 +305,19 @@ function AllStarsModal({
         </div>
 
         {filtered.length === 0 ? (
-          <div className="no-stars">
-            No little memories found. 🌱
-          </div>
+          <div className="no-stars">No little memories found. 🌱</div>
         ) : (
           <div className="stars-grid">
             {filtered.map((star) => {
               const c = getColor(star.color);
-
               return (
-                <div
-                  key={star._id}
-                  className="memory-card"
-                  style={{
-                    "--card-bg": c.soft,
-                  }}
-                >
-                  {star.photoUrl && (
-                    <img
-                      src={star.photoUrl}
-                      alt=""
-                    />
-                  )}
-
-                  <div className="memory-card-text">
-                    {star.text}
-                  </div>
-
-                  <div className="memory-card-date">
-                    {formatDate(star.createdAt)}
-                  </div>
-
+                <div key={star._id} className="memory-card" style={{ "--card-bg": c.soft }}>
+                  {star.photoUrl && <img src={star.photoUrl} alt="" />}
+                  <div className="memory-card-text">{star.text}</div>
+                  <div className="memory-card-date">{formatDate(star.createdAt)}</div>
                   <div className="memory-card-actions">
-                    <button
-                      onClick={() =>
-                        onEdit(star)
-                      }
-                    >
-                      Edit
-                    </button>
-
-                    <button
-                      onClick={() =>
-                        onDelete(star)
-                      }
-                    >
-                      Delete
-                    </button>
+                    <button onClick={() => onEdit(star)}>Edit</button>
+                    <button onClick={() => onDelete(star)}>Delete</button>
                   </div>
                 </div>
               );
@@ -624,55 +329,35 @@ function AllStarsModal({
   );
 }
 
-function ShareModal({
-  onClose,
-}) {
-  const [loading, setLoading] =
-    useState(true);
+function ShareModal({ onClose }) {
+  const [loading, setLoading] = useState(true);
   const [link, setLink] = useState("");
-  const [copied, setCopied] =
-    useState(false);
+  const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
     let active = true;
-
     starsApi
       .shareLink()
       .then(({ shareToken }) => {
         if (!active) return;
-
-        setLink(
-          `${window.location.origin}/share/jar/${shareToken}`
-        );
+        setLink(`${window.location.origin}/share/jar/${shareToken}`);
       })
       .catch((err) => {
         console.error(err);
-
-        if (active) {
-          setError(
-            "Couldn't create your share link."
-          );
-        }
+        if (active) setError("Couldn't create your share link.");
       })
       .finally(() => {
         if (active) setLoading(false);
       });
-
-    return () => {
-      active = false;
-    };
+    return () => { active = false; };
   }, []);
 
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(link);
       setCopied(true);
-
-      setTimeout(
-        () => setCopied(false),
-        2000
-      );
+      setTimeout(() => setCopied(false), 2000);
     } catch {
       setError("Couldn't copy the link.");
     }
@@ -680,7 +365,6 @@ function ShareModal({
 
   const share = async () => {
     if (!link) return;
-
     if (navigator.share) {
       try {
         await navigator.share({
@@ -699,51 +383,21 @@ function ShareModal({
   return (
     <div className="star-overlay">
       <TornPaper className="share-paper torn-paper-modal">
-        <button
-          className="paper-close"
-          onClick={onClose}
-        >
-          ×
-        </button>
-
-        <div className="paper-title">
-          your jar is ready ✨
-        </div>
-
-        <p>
-          Share your little collection of
-          happy memories with someone.
-        </p>
+        <button className="paper-close" onClick={onClose}>×</button>
+        <div className="paper-title">your jar is ready ✨</div>
+        <p>Share your little collection of happy memories with someone.</p>
 
         {loading ? (
-          <div className="share-loading">
-            preparing your jar...
-          </div>
+          <div className="share-loading">preparing your jar...</div>
         ) : error ? (
-          <div className="star-error">
-            {error}
-          </div>
+          <div className="star-error">{error}</div>
         ) : (
           <>
-            <div className="share-link">
-              {link}
-            </div>
-
-            <button
-              className="drop-button"
-              onClick={copy}
-            >
-              {copied
-                ? "✓ Link copied!"
-                : "Copy link"}
+            <div className="share-link">{link}</div>
+            <button className="drop-button" onClick={copy}>
+              {copied ? "✓ Link copied!" : "Copy link"}
             </button>
-
-            <button
-              className="photo-button"
-              onClick={share}
-            >
-              🔗 Share jar
-            </button>
+            <button className="photo-button" onClick={share}>🔗 Share jar</button>
           </>
         )}
       </TornPaper>
@@ -751,36 +405,20 @@ function ShareModal({
   );
 }
 
-function EditStarModal({
-  star,
-  onClose,
-  onSaved,
-}) {
-  const [text, setText] =
-    useState(star.text);
-
-  const [color, setColor] =
-    useState(star.color);
-
-  const [saving, setSaving] =
-    useState(false);
+function EditStarModal({ star, onClose, onSaved }) {
+  const [text, setText] = useState(star.text);
+  const [color, setColor] = useState(star.color);
+  const [saving, setSaving] = useState(false);
 
   const save = async () => {
     if (!text.trim()) return;
-
     try {
       setSaving(true);
-
-      const updated =
-        await starsApi.update(
-          star._id,
-          {
-            text: text.trim(),
-            color,
-            photoUrl: star.photoUrl,
-          }
-        );
-
+      const updated = await starsApi.update(star._id, {
+        text: text.trim(),
+        color,
+        photoUrl: star.photoUrl,
+      });
       onSaved(updated);
     } catch (err) {
       console.error(err);
@@ -793,105 +431,61 @@ function EditStarModal({
   return (
     <div className="star-overlay">
       <TornPaper className="paper-modal torn-paper-modal">
-        <button
-          className="paper-close"
-          onClick={onClose}
-        >
-          ×
-        </button>
-
-        <div className="paper-title">
-          unfold & edit
-        </div>
+        <button className="paper-close" onClick={onClose}>×</button>
+        <div className="paper-title">unfold & edit</div>
 
         <textarea
           value={text}
-          onChange={(e) =>
-            setText(e.target.value)
-          }
+          onChange={(e) => setText(e.target.value)}
           className="star-textarea"
         />
 
-        <div className="color-title">
-          star color
-        </div>
-
+        <div className="color-title">star color</div>
         <div className="color-row">
           {STAR_COLORS.map((c) => (
             <button
               key={c.id}
-              onClick={() =>
-                setColor(c.id)
-              }
-              className={`color-choice ${
-                color === c.id
-                  ? "selected"
-                  : ""
-              }`}
-              style={{
-                "--choice": c.color,
-              }}
+              onClick={() => setColor(c.id)}
+              className={`color-choice ${color === c.id ? "selected" : ""}`}
+              style={{ "--choice": c.color }}
             >
               ★
             </button>
           ))}
         </div>
 
-        <button
-          className="drop-button"
-          disabled={saving}
-          onClick={save}
-        >
-          {saving
-            ? "saving..."
-            : "save changes ✨"}
+        <button className="drop-button" disabled={saving} onClick={save}>
+          {saving ? "saving..." : "save changes ✨"}
         </button>
       </TornPaper>
     </div>
   );
 }
 
-export default function JournalView() {
-  const [stars, setStars] =
-    useState([]);
+export default function JournalView({ theme }) {
+  // Falls back to the jar's own signature colors if theme isn't passed —
+  // but the header now uses whatever accent/ink the active app theme has,
+  // so this page reads as "part of the tracker," not a bolted-on separate app.
+  const t = theme || { accent: "#3478b9", ink: "#423934" };
 
-  const [loading, setLoading] =
-    useState(true);
-
-  const [error, setError] =
-    useState("");
-
-  const [showAdd, setShowAdd] =
-    useState(false);
-
-  const [showAll, setShowAll] =
-    useState(false);
-
-  const [showShare, setShowShare] =
-    useState(false);
-
-  const [memoryStar, setMemoryStar] =
-    useState(null);
-
-  const [editingStar, setEditingStar] =
-    useState(null);
-
-  const [dropping, setDropping] =
-    useState(false);
+  const [stars, setStars] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [showAdd, setShowAdd] = useState(false);
+  const [showAll, setShowAll] = useState(false);
+  const [showShare, setShowShare] = useState(false);
+  const [memoryStar, setMemoryStar] = useState(null);
+  const [editingStar, setEditingStar] = useState(null);
+  const [dropping, setDropping] = useState(false);
 
   const loadStars = async () => {
     try {
       setLoading(true);
-
-      const data =
-        await starsApi.list();
-
+      const data = await starsApi.list();
       setStars(data);
     } catch (err) {
       console.error(err);
-      setError(
-        "Couldn't load your little jar."
-      );
+      setError("Couldn't load your little jar.");
     } finally {
       setLoading(false);
     }
@@ -902,19 +496,10 @@ export default function JournalView() {
   }, []);
 
   const addStar = (star) => {
-    setStars((prev) => [
-      star,
-      ...prev,
-    ]);
-
+    setStars((prev) => [star, ...prev]);
     setShowAdd(false);
-
     setDropping(true);
-
-    setTimeout(
-      () => setDropping(false),
-      1100
-    );
+    setTimeout(() => setDropping(false), 1100);
   };
 
   const openRandomMemory = () => {
@@ -922,156 +507,61 @@ export default function JournalView() {
       setShowAdd(true);
       return;
     }
-
-    const random =
-      stars[
-        Math.floor(
-          Math.random() * stars.length
-        )
-      ];
-
+    const random = stars[Math.floor(Math.random() * stars.length)];
     setMemoryStar(random);
   };
 
   const unfoldAnother = () => {
     if (stars.length <= 1) return;
-
     let next = memoryStar;
-
-    while (
-      next?._id === memoryStar?._id
-    ) {
-      next =
-        stars[
-          Math.floor(
-            Math.random() *
-              stars.length
-          )
-        ];
+    while (next?._id === memoryStar?._id) {
+      next = stars[Math.floor(Math.random() * stars.length)];
     }
-
     setMemoryStar(next);
   };
 
   const deleteStar = async (star) => {
-    const confirmed = window.confirm(
-      "Let this little memory leave the jar?"
-    );
-
+    const confirmed = window.confirm("Let this little memory leave the jar?");
     if (!confirmed) return;
-
     try {
-      await starsApi.remove(
-        star._id
-      );
-
-      setStars((prev) =>
-        prev.filter(
-          (s) =>
-            s._id !== star._id
-        )
-      );
+      await starsApi.remove(star._id);
+      setStars((prev) => prev.filter((s) => s._id !== star._id));
     } catch (err) {
       console.error(err);
-      alert(
-        "Couldn't delete the star."
-      );
+      alert("Couldn't delete the star.");
     }
   };
 
   const saveEditedStar = (updated) => {
-    setStars((prev) =>
-      prev.map((s) =>
-        s._id === updated._id
-          ? updated
-          : s
-      )
-    );
-
+    setStars((prev) => prev.map((s) => (s._id === updated._id ? updated : s)));
     setEditingStar(null);
   };
 
   if (loading) {
-    return (
-      <div className="star-page-loading">
-        ✨ Filling your little jar...
-      </div>
-    );
+    return <div className="star-page-loading">✨ Filling your little jar...</div>;
   }
 
   return (
     <div className="star-jar-page">
       <style>{`
+        /*
+          IMPORTANT: this component intentionally does NOT set its own
+          page-level background/text color anymore. It used to (via
+          --journal-bg / --journal-ink on .star-jar-page), which fought
+          with the tracker's own theme background and made this page
+          render as a visually separate app inside a dark/light shell
+          that didn't match. The parent App.jsx already provides the
+          real page background — this component now just sits inside it,
+          the same way every other page (Dashboard, Garden, etc.) does.
+
+          The jar + torn-paper cards keep their own warm cream/kraft
+          palette on purpose — that's the "physical scrapbook" identity
+          of this feature — but the page itself no longer overrides the
+          shell around it.
+        */
         .star-jar-page {
-          --journal-bg: #f9f1e6;
-          --journal-ink: #332b27;
-          --journal-accent: #3374b8;
-          --journal-panel: rgba(255,255,255,0.12);
-          --journal-glass: rgba(255,255,255,0.4);
           position: relative;
-          padding: 8px 0 35px;
           font-family: Georgia, serif;
-          overflow: hidden;
-          background: var(--journal-bg);
-          color: var(--journal-ink);
-        }
-
-        .star-jar-page::before {
-          content: "";
-          position: absolute;
-          inset: 0;
-          pointer-events: none;
-          background:
-            radial-gradient(circle at 20% 20%, rgba(244,216,172,.24), transparent 28%),
-            radial-gradient(circle at 80% 40%, rgba(215,195,225,.18), transparent 30%);
-        }
-
-        @media (prefers-color-scheme: dark) {
-          .star-jar-page {
-            --journal-bg: #120f1a;
-            --journal-ink: #f5ecff;
-            --journal-accent: #7ef7ff;
-            --journal-panel: rgba(255,255,255,0.06);
-            --journal-glass: rgba(120, 242, 255, 0.18);
-          }
-
-          .star-jar-page::before {
-            background:
-              radial-gradient(circle at 20% 20%, rgba(86, 227, 255, 0.16), transparent 28%),
-              radial-gradient(circle at 80% 40%, rgba(255, 73, 201, 0.18), transparent 30%);
-          }
-
-          .star-jar-prompt,
-          .all-stars-title,
-          .paper-title {
-            color: #85f7ff !important;
-            text-shadow: 0 0 10px rgba(96, 241, 255, 0.65);
-          }
-
-          .star-search,
-          .date-filter-field input,
-          .filter-row button,
-          .memory-card-actions button,
-          .char-count,
-          .paper-button,
-          .drop-button,
-          .photo-button {
-            box-shadow: inset 0 0 0 1px rgba(126, 247, 255, 0.28), 0 0 12px rgba(126, 247, 255, 0.18);
-          }
-
-          .paper-star span,
-          .memory-card-star,
-          .memory-star {
-            filter: saturate(2.2) brightness(1.4);
-            text-shadow: 0 0 12px rgba(255, 255, 255, 0.42), 0 0 18px rgba(255, 118, 206, 0.35);
-          }
-
-          .torn-paper-tape,
-          .memory-card::before,
-          .paper-button,
-          .drop-button {
-            filter: saturate(1.5) brightness(1.15);
-          }
         }
 
         .star-jar-header {
@@ -1081,24 +571,24 @@ export default function JournalView() {
           margin-bottom: 10px;
         }
 
-        .star-jar-prompt { 
+        .star-jar-prompt {
           font-family: "Courier New", monospace;
-          color: var(--journal-accent);
-          font-size: 23px;
+          color: ${t.accent};
+          font-size: clamp(17px, 5vw, 23px);
           margin-bottom: 7px;
         }
 
         .star-jar-count {
           font-family: "Courier New", monospace;
-          color: var(--journal-ink);
+          color: ${t.ink};
           font-size: 13px;
         }
 
         .jar-wrapper {
           display: block;
           position: relative;
-          width: min(260px, 72vw);
-          height: 320px;
+          width: min(240px, 66vw);
+          height: min(300px, 40vh);
           margin: 12px auto 16px;
           border: 0;
           background: transparent;
@@ -1110,12 +600,7 @@ export default function JournalView() {
           position: absolute;
           inset: 35px 10px 0;
           border-radius: 50%;
-          background: radial-gradient(
-            circle,
-            rgba(255,255,255,.9),
-            rgba(244,221,205,.2) 55%,
-            transparent 72%
-          );
+          background: radial-gradient(circle, rgba(255,255,255,.9), rgba(244,221,205,.2) 55%, transparent 72%);
           filter: blur(10px);
         }
 
@@ -1128,13 +613,8 @@ export default function JournalView() {
           height: 34px;
           border: 3px solid rgba(130,130,130,.65);
           border-radius: 12px 12px 8px 8px;
-          background: linear-gradient(
-            rgba(245,245,245,.88),
-            rgba(190,190,190,.35)
-          );
-          box-shadow:
-            0 4px 8px rgba(50,40,30,.12),
-            inset 0 2px 4px rgba(255,255,255,.9);
+          background: linear-gradient(rgba(245,245,245,.88), rgba(190,190,190,.35));
+          box-shadow: 0 4px 8px rgba(50,40,30,.12), inset 0 2px 4px rgba(255,255,255,.9);
           z-index: 3;
         }
 
@@ -1154,19 +634,8 @@ export default function JournalView() {
           right: 18px;
           border: 3px solid rgba(150,150,150,.42);
           border-radius: 48px 48px 65px 65px;
-          background:
-            linear-gradient(
-              90deg,
-              rgba(255,255,255,.58),
-              rgba(235,245,248,.18) 18%,
-              rgba(255,255,255,.15) 50%,
-              rgba(205,225,232,.2) 82%,
-              rgba(255,255,255,.6)
-            );
-          box-shadow:
-            inset 7px 0 10px rgba(255,255,255,.7),
-            inset -8px 0 15px rgba(120,150,160,.08),
-            0 12px 30px rgba(80,70,60,.13);
+          background: linear-gradient(90deg, rgba(255,255,255,.58), rgba(235,245,248,.18) 18%, rgba(255,255,255,.15) 50%, rgba(205,225,232,.2) 82%, rgba(255,255,255,.6));
+          box-shadow: inset 7px 0 10px rgba(255,255,255,.7), inset -8px 0 15px rgba(120,150,160,.08), 0 12px 30px rgba(80,70,60,.13);
           overflow: hidden;
         }
 
@@ -1175,14 +644,7 @@ export default function JournalView() {
           position: absolute;
           inset: 0;
           border-radius: inherit;
-          background:
-            linear-gradient(
-              90deg,
-              rgba(255,255,255,.6),
-              transparent 15%,
-              transparent 80%,
-              rgba(255,255,255,.4)
-            );
+          background: linear-gradient(90deg, rgba(255,255,255,.6), transparent 15%, transparent 80%, rgba(255,255,255,.4));
           pointer-events: none;
           z-index: 4;
         }
@@ -1228,9 +690,7 @@ export default function JournalView() {
           display: block;
           font-size: 30px;
           color: var(--star-color);
-          text-shadow:
-            1px 1px 0 rgba(255,255,255,.7),
-            -1px -1px 0 rgba(100,70,60,.12);
+          text-shadow: 1px 1px 0 rgba(255,255,255,.7), -1px -1px 0 rgba(100,70,60,.12);
           transform: rotate(-5deg);
         }
 
@@ -1249,33 +709,18 @@ export default function JournalView() {
         }
 
         @keyframes starDrop {
-          0% {
-            opacity: 0;
-            transform: translateY(-180px) rotate(-30deg) scale(.7);
-          }
-
-          65% {
-            opacity: 1;
-            transform: translateY(12px) rotate(14deg) scale(1.08);
-          }
-
-          82% {
-            transform: translateY(-5px) rotate(-7deg) scale(.96);
-          }
-
-          100% {
-            transform: translateY(0) rotate(4deg) scale(1);
-          }
+          0% { opacity: 0; transform: translateY(-180px) rotate(-30deg) scale(.7); }
+          65% { opacity: 1; transform: translateY(12px) rotate(14deg) scale(1.08); }
+          82% { transform: translateY(-5px) rotate(-7deg) scale(.96); }
+          100% { transform: translateY(0) rotate(4deg) scale(1); }
         }
 
-        .jar-wrapper:active {
-          transform: scale(.985);
-        }
+        .jar-wrapper:active { transform: scale(.985); }
 
         .star-actions {
           position: relative;
           z-index: 3;
-          width: min(280px, 82vw);
+          width: min(280px, 88vw);
           margin: 0 auto;
           display: grid;
           gap: 8px;
@@ -1290,23 +735,15 @@ export default function JournalView() {
           font-size: 12px;
           cursor: pointer;
           box-shadow: 2px 3px 7px rgba(70,50,30,.15);
-          clip-path: polygon(
-            0% 16%, 8% 8%, 18% 14%, 30% 5%, 42% 12%, 54% 4%, 64% 14%, 76% 7%, 90% 16%, 100% 20%,
-            98% 78%, 92% 90%, 82% 82%, 72% 94%, 60% 83%, 48% 96%, 34% 86%, 20% 97%, 9% 88%, 0% 82%
-          );
+          clip-path: polygon(0% 16%, 8% 8%, 18% 14%, 30% 5%, 42% 12%, 54% 4%, 64% 14%, 76% 7%, 90% 16%, 100% 20%, 98% 78%, 92% 90%, 82% 82%, 72% 94%, 60% 83%, 48% 96%, 34% 86%, 20% 97%, 9% 88%, 0% 82%);
           transition: transform .18s ease;
         }
 
-        .paper-button:hover {
-          transform: translateY(-2px) rotate(-.5deg);
-        }
-
-        .paper-button:active {
-          transform: translateY(1px);
-        }
+        .paper-button:hover { transform: translateY(-2px) rotate(-.5deg); }
+        .paper-button:active { transform: translateY(1px); }
 
         .star-page-loading {
-          min-height: 60vh;
+          min-height: 40vh;
           display: grid;
           place-items: center;
           font-family: "Courier New", monospace;
@@ -1322,6 +759,8 @@ export default function JournalView() {
           margin: 8px 0;
         }
 
+        /* Every popup centers on the viewport — add, edit, memory,
+           all-stars, share all use this same overlay. */
         .star-overlay {
           position: fixed;
           inset: 0;
@@ -1329,17 +768,17 @@ export default function JournalView() {
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 8px;
-          background: rgba(55,45,40,.22);
+          padding: 16px;
+          background: rgba(55,45,40,.35);
           backdrop-filter: blur(3px);
           -webkit-backdrop-filter: blur(3px);
-          overflow: hidden;
+          overflow-y: auto;
         }
 
         .torn-paper {
           position: relative;
           width: min(92vw, 420px);
-          max-height: calc(100dvh - 20px);
+          max-height: calc(100dvh - 32px);
           box-sizing: border-box;
           background:
             radial-gradient(circle at 20% 15%, rgba(255,255,255,.38), transparent 35%),
@@ -1365,10 +804,6 @@ export default function JournalView() {
           mix-blend-mode: multiply;
         }
 
-        .torn-paper::after {
-          display: none;
-        }
-
         .torn-paper-content {
           position: relative;
           z-index: 2;
@@ -1389,38 +824,13 @@ export default function JournalView() {
           background-image: repeating-linear-gradient(90deg, rgba(255,255,255,.13) 0, rgba(255,255,255,.13) 1px, transparent 1px, transparent 4px);
         }
 
-        .torn-modal-backdrop {
-          position: fixed;
-          inset: 0;
-          z-index: 1000;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 24px;
-          background: rgba(44, 39, 35, 0.30);
-          backdrop-filter: blur(5px);
-          -webkit-backdrop-filter: blur(5px);
-          animation: tornBackdropIn 0.25s ease;
-        }
-
         .torn-paper-modal {
           animation: tornPaperIn 0.32s cubic-bezier(.22,.8,.25,1);
         }
 
-        @keyframes tornBackdropIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-
         @keyframes tornPaperIn {
-          from {
-            opacity: 0;
-            transform: translateY(15px) rotate(-1.5deg) scale(0.96);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0) rotate(0deg) scale(1);
-          }
+          from { opacity: 0; transform: translateY(15px) rotate(-1.5deg) scale(0.96); }
+          to { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); }
         }
 
         .paper-modal,
@@ -1428,57 +838,12 @@ export default function JournalView() {
         .share-paper {
           position: relative;
           width: min(300px, 100%);
-          max-height: 68vh;
+          max-height: 72vh;
           overflow: auto;
           padding: 18px 14px 14px;
           background: #f5eeee;
           box-shadow: 8px 12px 30px rgba(50,40,30,.2);
           border: 1px solid rgba(150, 125, 105, 0.12);
-        }
-
-        .paper-modal::before,
-        .memory-paper::before,
-        .share-paper::before,
-        .paper-modal::after,
-        .memory-paper::after,
-        .share-paper::after {
-          content: "";
-          position: absolute;
-          left: 12px;
-          right: 12px;
-          height: 18px;
-          pointer-events: none;
-          background: rgba(255,255,255,0.12);
-          filter: blur(0.5px);
-        }
-
-        .paper-modal::before,
-        .memory-paper::before,
-        .share-paper::before {
-          top: -7px;
-          clip-path: polygon(
-            0% 100%, 7% 38%, 15% 78%, 24% 32%, 33% 76%, 42% 24%, 52% 83%, 62% 26%, 71% 78%, 80% 30%, 89% 80%, 100% 100%
-          );
-        }
-
-        .paper-modal::after,
-        .memory-paper::after,
-        .share-paper::after {
-          bottom: -8px;
-          clip-path: polygon(
-            0% 0%, 12% 64%, 23% 25%, 35% 72%, 47% 22%, 57% 70%, 67% 28%, 78% 70%, 88% 24%, 100% 0%
-          );
-        }
-
-        .modal-tape {
-          position: absolute;
-          width: 110px;
-          height: 28px;
-          background: #d8ae59;
-          top: 7px;
-          left: 50%;
-          transform: translateX(-50%) rotate(-1deg);
-          opacity: .9;
         }
 
         .paper-close {
@@ -1518,12 +883,7 @@ export default function JournalView() {
           border: 0;
           outline: 0;
           padding: 12px;
-          background:
-            repeating-linear-gradient(
-              transparent 0,
-              transparent 24px,
-              rgba(90,120,150,.12) 25px
-            );
+          background: repeating-linear-gradient(transparent 0, transparent 24px, rgba(90,120,150,.12) 25px);
           font-family: "Courier New", monospace;
           font-size: 14px;
           line-height: 24px;
@@ -1546,6 +906,7 @@ export default function JournalView() {
           display: flex;
           gap: 10px;
           justify-content: center;
+          flex-wrap: wrap;
         }
 
         .color-choice {
@@ -1618,21 +979,12 @@ export default function JournalView() {
           box-shadow: 3px 5px 10px rgba(70,50,30,.13);
         }
 
-        .drop-button:disabled {
-          opacity: .55;
-          cursor: wait;
-        }
+        .drop-button:disabled { opacity: .55; cursor: wait; }
 
         .memory-paper {
           background: var(--paper-color);
           text-align: center;
-          padding-top: 45px;
-        }
-
-        .memory-star {
-          font-size: 42px;
-          color: #d9a9b8;
-          margin-bottom: 10px;
+          padding: 20px 18px 14px;
         }
 
         .memory-text {
@@ -1640,7 +992,7 @@ export default function JournalView() {
           font-size: 15px;
           line-height: 1.55;
           color: #443b37;
-          padding: 10px 6px;
+          padding: 10px 6px 0;
         }
 
         .memory-photo {
@@ -1678,7 +1030,7 @@ export default function JournalView() {
         .all-stars-panel {
           position: relative;
           width: min(760px, 100%);
-          max-height: 82vh;
+          max-height: 84vh;
           overflow: auto;
           padding: 20px 18px 18px;
           background: #f9f5eb;
@@ -1698,7 +1050,7 @@ export default function JournalView() {
           text-align: center;
           font-family: Georgia, serif;
           color: #3478b9;
-          font-size: 28px;
+          font-size: 26px;
           margin-top: 15px;
         }
 
@@ -1710,15 +1062,14 @@ export default function JournalView() {
         }
 
         .search-row {
-          display: grid;
-          grid-template-columns: 1fr 150px;
+          display: flex;
+          flex-wrap: wrap;
           gap: 8px;
           margin-top: 10px;
         }
 
         .star-search,
         .date-search {
-          width: 100%;
           box-sizing: border-box;
           padding: 10px 12px;
           border: 1px solid rgba(127, 103, 81, 0.25);
@@ -1726,12 +1077,11 @@ export default function JournalView() {
           background: rgba(255,255,255,0.74);
           outline: none;
           font-family: "Courier New", monospace;
-          color: var(--journal-ink);
+          color: #423934;
         }
 
-        .date-search {
-          min-width: 0;
-        }
+        .star-search { flex: 1 1 160px; }
+        .date-search { flex: 1 1 140px; }
 
         .filter-row {
           display: flex;
@@ -1747,7 +1097,7 @@ export default function JournalView() {
           padding: 6px 11px;
           cursor: pointer;
           font-family: "Courier New", monospace;
-          color: var(--journal-ink);
+          color: #423934;
         }
 
         .filter-row .filter-active {
@@ -1757,7 +1107,7 @@ export default function JournalView() {
 
         .stars-grid {
           display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
+          grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
           gap: 14px;
         }
 
@@ -1769,14 +1119,6 @@ export default function JournalView() {
           border-radius: 16px;
           box-shadow: 0 2px 8px rgba(70,50,30,.08);
           border: 1px solid rgba(120, 101, 83, 0.12);
-        }
-
-        .memory-card::before {
-          display: none;
-        }
-
-        .memory-card::after {
-          display: none;
         }
 
         .memory-card img {
@@ -1791,7 +1133,6 @@ export default function JournalView() {
           font-family: "Courier New", monospace;
           font-size: 13px;
           line-height: 1.5;
-          margin-top: 0;
         }
 
         .memory-card-date {
@@ -1822,9 +1163,7 @@ export default function JournalView() {
           font-family: "Courier New", monospace;
         }
 
-        .share-paper {
-          text-align: center;
-        }
+        .share-paper { text-align: center; }
 
         .share-paper p {
           font-family: "Courier New", monospace;
@@ -1848,209 +1187,61 @@ export default function JournalView() {
           font-size: 12px;
         }
 
-        @media (max-width: 600px) {
-          .star-jar-page {
-            padding-top: 2px;
+        @media (max-width: 420px) {
+          .paper-modal, .memory-paper, .share-paper, .all-stars-panel {
+            padding-left: 14px;
+            padding-right: 14px;
           }
-
-          .jar-wrapper {
-            height: 350px;
-          }
-
-          .stars-grid {
-            grid-template-columns: 1fr;
-          }
-
-          .all-stars-panel {
-            padding: 18px;
-          }
-
-          .paper-modal,
-          .memory-paper,
-          .share-paper {
-            padding-left: 18px;
-            padding-right: 18px;
-          }
+          .search-row { flex-direction: column; }
+          .star-search, .date-search { flex: 1 1 auto; width: 100%; }
         }
-          /* =====================================================
-   FINAL MEMORY PAPER FIX — NO GAP
-   ===================================================== */
-
-.memory-paper {
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-  overflow: visible !important;
-}
-
-/* Remove the extra inner space */
-.memory-paper .torn-paper-content {
-  padding: 7px 18px 10px !important;
-}
-
-/* ⭐ Put the star immediately below the tape */
-.memory-paper .memory-star {
-  margin: 0 !important;
-  padding: 0 !important;
-
-  font-size: 34px;
-  line-height: 1;
-
-  transform: translateY(6px);
-}
-
-/* Text should sit immediately below star */
-.memory-paper .memory-text {
-  margin: 3px 0 0 !important;
-  padding: 0 4px !important;
-
-  line-height: 1.45;
-}
-
-/* Photo close to text */
-.memory-paper .memory-photo {
-  margin: 7px auto 0 !important;
-}
-
-/* Date close to photo */
-.memory-paper .memory-date {
-  margin: 6px 0 0 !important;
-}
-
-/* Buttons close to date */
-.memory-paper .memory-actions {
-  margin: 7px 0 0 !important;
-  gap: 6px;
-}
-
-/* Remove the OLD fake torn overlays */
-.memory-paper::before,
-.memory-paper::after {
-  display: none !important;
-}
       `}</style>
 
-      <SectionTitle
-        theme={{
-          ...{},
-          accent: "#3478b9",
-          ink: "#423934",
-        }}
-        sub="Keep the little moments that made your day."
-      >
+      <SectionTitle theme={t} sub="Keep the little moments that made your day.">
         ⭐ Little Jar of Stars
       </SectionTitle>
 
       <div className="star-jar-header">
-        <div className="star-jar-prompt">
-          tap the jar
-        </div>
-
+        <div className="star-jar-prompt">tap the jar</div>
         <div className="star-jar-count">
-          {stars.length}{" "}
-          {stars.length === 1
-            ? "star"
-            : "stars"}{" "}
-          captured inside.
+          {stars.length} {stars.length === 1 ? "star" : "stars"} captured inside.
         </div>
       </div>
 
       {error && (
-        <div
-          className="star-error"
-          style={{
-            maxWidth: 350,
-            margin: "10px auto",
-          }}
-        >
+        <div className="star-error" style={{ maxWidth: 350, margin: "10px auto" }}>
           {error}
         </div>
       )}
 
-      <Jar
-        stars={stars}
-        onTap={openRandomMemory}
-        dropping={dropping}
-      />
+      <Jar stars={stars} onTap={openRandomMemory} dropping={dropping} />
 
       <div className="star-actions">
-        <button
-          className="paper-button"
-          onClick={() =>
-            setShowAdd(true)
-          }
-        >
-          + add a star
-        </button>
-
-        <button
-          className="paper-button"
-          onClick={() =>
-            setShowAll(true)
-          }
-        >
-          ★ view all stars
-        </button>
-
-        {/* <button
-          className="paper-button"
-          onClick={() =>
-            setShowShare(true)
-          }
-        >
-          🔗 share jar
-        </button> */}
+        <button className="paper-button" onClick={() => setShowAdd(true)}>+ add a star</button>
+        <button className="paper-button" onClick={() => setShowAll(true)}>★ view all stars</button>
+        <button className="paper-button" onClick={() => setShowShare(true)}>🔗 share jar</button>
       </div>
 
-      {showAdd && (
-        <AddStarModal
-          onClose={() =>
-            setShowAdd(false)
-          }
-          onCreated={addStar}
-        />
-      )}
+      {showAdd && <AddStarModal onClose={() => setShowAdd(false)} onCreated={addStar} />}
 
       {memoryStar && (
-        <MemoryModal
-          star={memoryStar}
-          onClose={() =>
-            setMemoryStar(null)
-          }
-          onAnother={unfoldAnother}
-        />
+        <MemoryModal star={memoryStar} onClose={() => setMemoryStar(null)} onAnother={unfoldAnother} />
       )}
 
       {showAll && (
         <AllStarsModal
           stars={stars}
-          onClose={() =>
-            setShowAll(false)
-          }
-          onEdit={(star) => {
-            setShowAll(false);
-            setEditingStar(star);
-          }}
+          onClose={() => setShowAll(false)}
+          onEdit={(star) => { setShowAll(false); setEditingStar(star); }}
           onDelete={deleteStar}
         />
       )}
 
       {editingStar && (
-        <EditStarModal
-          star={editingStar}
-          onClose={() =>
-            setEditingStar(null)
-          }
-          onSaved={saveEditedStar}
-        />
+        <EditStarModal star={editingStar} onClose={() => setEditingStar(null)} onSaved={saveEditedStar} />
       )}
 
-      {showShare && (
-        <ShareModal
-          onClose={() =>
-            setShowShare(false)
-          }
-        />
-      )}
+      {showShare && <ShareModal onClose={() => setShowShare(false)} />}
     </div>
   );
 }

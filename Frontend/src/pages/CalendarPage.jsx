@@ -88,7 +88,7 @@ export default function CalendarView({ theme, entries, essentials, onSelectDay, 
   for (let day = 1; day <= daysInMonth; day++) cells.push(day);
 
   return (
-    <div>
+    <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", height: "100%" }}>
       <SectionTitle theme={theme} sub="Tap a day to open or edit that entry.">Calendar</SectionTitle>
       <Panel theme={theme}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>

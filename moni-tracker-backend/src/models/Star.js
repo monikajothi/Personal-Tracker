@@ -33,7 +33,9 @@ const starSchema = new mongoose.Schema(
     legacyEntryId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Entry",
-      default: null,
+      // Do not default to null so the field is absent when not set.
+      // This prevents null values from being indexed and causing
+      // duplicate-key conflicts for the unique compound index.
       index: true,
     },
 
@@ -47,11 +49,14 @@ const starSchema = new mongoose.Schema(
   }
 );
 
+// Ensure the unique constraint only applies when `legacyEntryId` is
+// present and not null. This avoids duplicate-key errors when many
+// stars are created without a legacyEntryId.
 starSchema.index(
   { userId: 1, legacyEntryId: 1 },
   {
     unique: true,
-    sparse: true,
+    partialFilterExpression: { legacyEntryId: { $exists: true, $ne: null } },
   }
 );
 

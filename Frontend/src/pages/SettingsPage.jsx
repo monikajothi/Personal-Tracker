@@ -64,6 +64,69 @@ export default function SettingsView({ theme, settings, onChange }) {
       </Panel>
 
       <Panel theme={theme} style={{ marginBottom: 14 }}>
+        <div style={{ fontWeight: 800, marginBottom: 10 }}>💧 Hydration</div>
+        <Toggle
+          on={settings.hydration?.enabled}
+          onClick={() => onChange({ ...settings, hydration: { ...settings.hydration, enabled: !settings.hydration?.enabled } })}
+          theme={theme}
+          label="Adaptive water reminders"
+        />
+
+        {settings.hydration?.enabled && (
+          <div style={{ marginTop: 10 }}>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <div style={{ minWidth: 140 }}>
+                <div style={{ fontSize: 12, opacity: 0.7 }}>Daily target (ml)</div>
+                <input type="number" value={settings.hydration?.targetMl || 2000} onChange={(e) => onChange({ ...settings, hydration: { ...settings.hydration, targetMl: Number(e.target.value) } })} style={{ width: '100%', padding: 8, marginTop: 6 }} />
+              </div>
+              <div style={{ minWidth: 140 }}>
+                <div style={{ fontSize: 12, opacity: 0.7 }}>Cup size (ml)</div>
+                <input type="number" value={settings.hydration?.cupMl || 250} onChange={(e) => onChange({ ...settings, hydration: { ...settings.hydration, cupMl: Number(e.target.value) } })} style={{ width: '100%', padding: 8, marginTop: 6 }} />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+              <div>
+                <div style={{ fontSize: 12, opacity: 0.7 }}>Start</div>
+                <TimeInput value={settings.hydration?.startTime || '08:00'} onChange={(t) => onChange({ ...settings, hydration: { ...settings.hydration, startTime: t } })} theme={theme} />
+              </div>
+              <div>
+                <div style={{ fontSize: 12, opacity: 0.7 }}>End</div>
+                <TimeInput value={settings.hydration?.endTime || '20:00'} onChange={(t) => onChange({ ...settings, hydration: { ...settings.hydration, endTime: t } })} theme={theme} />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+              <div style={{ minWidth: 160 }}>
+                <div style={{ fontSize: 12, opacity: 0.7 }}>Min interval (min)</div>
+                <input type="number" value={settings.hydration?.minIntervalMin || 30} onChange={(e) => onChange({ ...settings, hydration: { ...settings.hydration, minIntervalMin: Number(e.target.value) } })} style={{ width: '100%', padding: 8, marginTop: 6 }} />
+              </div>
+              <div style={{ minWidth: 160 }}>
+                <div style={{ fontSize: 12, opacity: 0.7 }}>Max interval (min)</div>
+                <input type="number" value={settings.hydration?.maxIntervalMin || 180} onChange={(e) => onChange({ ...settings, hydration: { ...settings.hydration, maxIntervalMin: Number(e.target.value) } })} style={{ width: '100%', padding: 8, marginTop: 6 }} />
+              </div>
+            </div>
+
+            <div style={{ marginTop: 10 }}>
+              <Toggle
+                on={settings.hydration?.adaptive}
+                onClick={() => onChange({ ...settings, hydration: { ...settings.hydration, adaptive: !settings.hydration?.adaptive } })}
+                theme={theme}
+                label="Adaptive frequency"
+              />
+            </div>
+
+            <div style={{ marginTop: 10 }}>
+              <div style={{ fontSize: 12, opacity: 0.7 }}>Repeat mode (optional)</div>
+              <div style={{ fontSize: 12, opacity: 0.7, marginTop: 6 }}>Set to a fixed repeat interval (minutes) to schedule multiple reminders between now and end time. Leave empty for adaptive scheduling.</div>
+              <input type="number" value={settings.hydration?.repeatEveryMin || ""} onChange={(e) => onChange({ ...settings, hydration: { ...settings.hydration, repeatEveryMin: e.target.value ? Number(e.target.value) : null } })} style={{ width: 120, padding: 8, marginTop: 6 }} />
+            </div>
+
+          </div>
+        )}
+      </Panel>
+
+      <Panel theme={theme} style={{ marginBottom: 14 }}>
   <div
     style={{
       fontWeight: 800,

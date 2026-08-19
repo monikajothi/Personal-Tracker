@@ -5,7 +5,18 @@ const DEFAULTS = {
   theme: "sakura", isDark: false, animationsOn: true, companion: "cat",
   waterTarget: 8, essentials: ["sleep", "water", "mood", "movement"],
   customHabits: [], cycleEnabled: true, reminders: { enabled: false, time: "20:00" },
-};
+    hydration: {
+      enabled: false,
+      targetMl: 2000,
+      cupMl: 250,
+      startTime: "08:00",
+      endTime: "20:00",
+      minIntervalMin: 30,
+      maxIntervalMin: 180,
+      snoozeMin: 30,
+      quietHours: { start: "22:00", end: "07:00" },
+    },
+  };
 
 export function useSettings(enabled) {
   const [settings, setSettings] = useState(DEFAULTS);

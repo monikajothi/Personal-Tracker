@@ -81,6 +81,11 @@ export default function Dashboard({ theme, entries, settings, onOpenCategory, on
         <StatCard theme={theme} emoji="💗" value={`${pct}%`} label="today's check-in" />
       </div>
 
+      {/* Hydration progress */}
+      <div style={{ marginBottom: 16 }}>
+        <HydrationCard theme={theme} todayEntry={todayEntry} settings={settings} />
+      </div>
+
       {pct === 100 && essentials.length > 0 && (
         <Panel theme={theme} style={{ textAlign: "center", marginBottom: 16, background: theme.soft, border: "none" }}>
           <div className={animationsOn ? "mwt-pop" : ""} style={{ fontSize: 15, fontWeight: 800, color: theme.ink }}>
@@ -152,6 +157,24 @@ const StatCard = ({ theme, emoji, value, label }) => (
     <div style={{ fontSize: 11.5, opacity: 0.6, fontWeight: 700 }}>{label}</div>
   </Panel>
 );
+
+function HydrationCard({ theme, todayEntry, settings }) {
+  const cupMl = settings.hydration?.cupMl || 250;
+  const targetMl = settings.hydration?.targetMl || (settings.waterTarget || 8) * cupMl;
+  const glasses = todayEntry.water?.glasses || 0;
+  const todayMl = glasses * cupMl;
+  const pct = targetMl ? Math.round((todayMl / targetMl) * 100) : 0;
+
+  return (
+    <Panel theme={theme} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: 12 }}>
+      <div>
+        <div style={{ fontSize: 13.5, fontWeight: 800, color: theme.ink }}>🥤 Hydration</div>
+        <div style={{ fontSize: 12, opacity: 0.75 }}>{`${(todayMl/1000).toFixed(1)} L / ${(targetMl/1000).toFixed(1)} L — ${pct}%`}</div>
+      </div>
+      <div style={{ fontWeight: 800, fontSize: 16, color: theme.accent }}>{pct}%</div>
+    </Panel>
+  );
+}
 
 function WeekStrip({ theme, entries, essentials }) {
   const days = useLastNDays(entries, 7);

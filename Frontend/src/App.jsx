@@ -20,6 +20,7 @@ import { AuthProvider, useAuth } from "./hooks/useAuth.jsx";
 import { useEntries } from "./hooks/useEntries.js";
 import { useSettings } from "./hooks/useSettings.js";
 import { useReminders } from "./hooks/useReminders.js";
+import { useHydrationReminders } from "./hooks/useHydrationReminders.js";
 
 import { resolveTheme } from "./theme/tokens.js";
 import {
@@ -216,6 +217,70 @@ function TrackerApp() {
   const dayEntry = entries[editingDay] || {};
 
   const todayEntry = entries[t] || {};
+  const QUICK_LOG_KEY = "hydrationQuickLogs";
+
+  // Flush quick hydration logs stored while app was backgrounded.
+  const flushQuickHydrationLogs = useCallback(async () => {
+    try {
+      const raw = localStorage.getItem(QUICK_LOG_KEY);
+      if (!raw) return;
+      const logs = JSON.parse(raw || "[]");
+      if (!Array.isArray(logs) || logs.length === 0) return;
+
+      // Sum ml and convert to glasses based on cup size
+      const cupMl = settings.hydration?.cupMl || 250;
+      const totalMl = logs.reduce((s, l) => s + (Number(l.ml) || 0), 0);
+      const addGlasses = Math.round(totalMl / cupMl);
+      if (addGlasses > 0) {
+        const current = todayEntry.water?.glasses || 0;
+        saveCategory(t, "water", { glasses: current + addGlasses });
+      }
+
+      // clear cache
+      localStorage.removeItem(QUICK_LOG_KEY);
+    } catch (err) {
+      console.error("Failed to flush quick hydration logs:", err);
+    }
+  }, [saveCategory, t, todayEntry, settings.hydration]);
+
+  // Run flush when app becomes visible / active
+  React.useEffect(() => {
+    // Browser visibility
+    const onVis = () => {
+      if (document.visibilityState === "visible") flushQuickHydrationLogs();
+    };
+    document.addEventListener("visibilitychange", onVis);
+
+    // Capacitor app state
+    let appListener = null;
+    (async () => {
+      try {
+        const pkg = "@capacitor/app";
+        const mod = await import(pkg);
+        const AppLib = mod.App || mod.default || mod;
+        if (AppLib && typeof AppLib.addListener === "function") {
+          appListener = AppLib.addListener("appStateChange", (state) => {
+            if (state.isActive) flushQuickHydrationLogs();
+          });
+        }
+      } catch (_) {}
+    })();
+
+    // Also attempt an immediate flush on mount if the document is visible
+    if (document.visibilityState === "visible") {
+      flushQuickHydrationLogs();
+    }
+
+    // Listen for immediate flush requests from native action handlers
+    const onQuickFlush = () => flushQuickHydrationLogs();
+    window.addEventListener("hydration-quicklog-flush", onQuickFlush);
+
+    return () => {
+      document.removeEventListener("visibilitychange", onVis);
+      if (appListener && typeof appListener.remove === "function") appListener.remove();
+      window.removeEventListener("hydration-quicklog-flush", onQuickFlush);
+    };
+  }, [flushQuickHydrationLogs]);
 
   const isFemaleUser = user?.gender === "female";
 
@@ -249,6 +314,19 @@ function TrackerApp() {
     time: settings.reminders?.time,
     todayComplete,
   });
+
+  // Hydration reminders: schedules adaptive water reminders based on
+  // settings and today's logged water. Uses native LocalNotifications
+  // when available and falls back to browser notifications.
+  const cupMl = settings.hydration?.cupMl || 250;
+  const todayMl = (todayEntry.water?.glasses || 0) * cupMl;
+
+  const logWaterMl = (ml) => {
+    const addGlasses = Math.round(ml / cupMl);
+    saveCategory(t, "water", { glasses: (todayEntry.water?.glasses || 0) + addGlasses });
+  };
+
+  useHydrationReminders({ settings, todayMl, onLogMl: logWaterMl });
 
   /* =======================================================
      CATEGORY ACTIONS

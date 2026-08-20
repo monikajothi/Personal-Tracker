@@ -16,6 +16,8 @@ const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
   "https://personal-tracker-ri3o.onrender.com",
+  "https://localhost",
+  "capacitor://localhost",
 ];
 
 const app = express();

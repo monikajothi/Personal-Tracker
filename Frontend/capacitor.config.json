@@ -1,9 +1,5 @@
 {
   "appId": "com.personaltracker.app",
   "appName": "Wellness Tracker",
-  "webDir": "dist",
-  "server": {
-    "url": "http://10.119.198.108:5173/",
-    "cleartext": true
-  }
+  "webDir": "dist"
 }

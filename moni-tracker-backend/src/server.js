@@ -19,7 +19,32 @@ const allowedOrigins = [
 ];
 
 const app = express();
-app.use(cors({ origin: process.env.CLIENT_ORIGIN || "*" }));
+// app.use(cors({ origin: process.env.CLIENT_ORIGIN || "*" }));
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Allow requests with no origin
+      // (Postman, native apps, etc.)
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(
+        new Error(`CORS blocked: ${origin}`)
+      );
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+    ],
+  })
+);
 app.use(express.json({ limit: "1mb" }));
 
 app.get("/api/health", (req, res) => res.json({ ok: true }));

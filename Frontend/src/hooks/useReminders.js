@@ -1,74 +1,55 @@
 import { useEffect, useRef } from "react";
+import { Capacitor } from "@capacitor/core";
+import { LocalNotifications } from "@capacitor/local-notifications";
 import { todayStr } from "../constants.js";
 
-// useReminders now supports native scheduled notifications via
-// @capacitor/local-notifications when running inside the Capacitor
-// Android/iOS app. In the browser it falls back to the existing
-// Notification API (fires only while the page is open).
+// Static imports above are the fix — Capacitor's web build of these
+// packages provides safe no-op fallbacks, so this same code path runs
+// correctly in both the browser and the native Android/iOS app. The
+// previous version used `await import(variableString)`, which Vite
+// cannot bundle and which fails silently at runtime in the built APK.
 export function useReminders({ enabled, time, todayComplete }) {
-  const firedForRef = useRef(null); // "YYYY-MM-DD" already notified today
-  const nativeScheduledRef = useRef(false);
+  const firedForRef = useRef(null); // "YYYY-MM-DD" already notified today (browser fallback only)
 
-  // Request browser permission when enabled (fallback)
   useEffect(() => {
     if (!enabled || typeof Notification === "undefined") return;
-    if (Notification.permission === "default") Notification.requestPermission();
+    if (!Capacitor.isNativePlatform() && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
   }, [enabled]);
 
-  // Main effect: either schedule native local notifications or run the
-  // browser interval-based notifier.
   useEffect(() => {
     let intervalId = null;
     let cancelled = false;
 
     async function setupNative() {
+      if (!Capacitor.isNativePlatform()) return false;
+
       try {
-        // Dynamic imports so bundlers don't fail for web builds
-        const corePkg = "@capacitor/core";
-        const coreMod = await import(corePkg);
-        const Capacitor = coreMod.Capacitor || coreMod.default || coreMod;
-        if (!Capacitor || !Capacitor.isNativePlatform || !Capacitor.isNativePlatform()) {
-          return false;
-        }
-
-        const lnPkg = "@capacitor/local-notifications";
-        const lnMod = await import(lnPkg);
-        const LocalNotifications = lnMod.LocalNotifications || lnMod.default || lnMod;
-
-        // Ask permission
         await LocalNotifications.requestPermissions();
 
-        // Clear previously scheduled notifications for this app to avoid duplicates
+        // Clear any previously scheduled daily check-in reminder (id 1000)
+        // before rescheduling, so settings changes don't create duplicates.
         try {
           const pending = await LocalNotifications.getPending();
-          const mine = (pending?.notifications || []).filter(n => n.id === 1000);
+          const mine = (pending?.notifications || []).filter((n) => n.id === 1000);
           if (mine.length) {
-            await LocalNotifications.cancel({ notifications: mine.map(n => ({ id: n.id })) });
+            await LocalNotifications.cancel({ notifications: mine.map((n) => ({ id: n.id })) });
           }
-        } catch (e) {
-          // ignore cancel errors
-        }
+        } catch { /* nothing pending yet */ }
 
         if (!enabled) return true;
 
-        // Parse configured time (HH:MM)
         const [h, m] = (time || "20:00").split(":").map(Number);
 
-        // Compute next occurrence
-        const now = new Date();
-        const next = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0, 0);
-        if (next <= now) next.setDate(next.getDate() + 1);
-
-        // Create Android channel for daily check-in
         try {
           await LocalNotifications.createChannel({
             id: "wellness-checkin",
             name: "Daily check-in",
             importance: 3,
           });
-        } catch (_) {}
+        } catch { /* channel already exists */ }
 
-        // Schedule a daily notification at the chosen hour/minute using wall-clock `on`.
         await LocalNotifications.schedule({
           notifications: [
             {
@@ -82,16 +63,13 @@ export function useReminders({ enabled, time, todayComplete }) {
           ],
         });
 
-        nativeScheduledRef.current = true;
         return true;
       } catch (err) {
-        // Not running inside Capacitor native platform or plugin not installed
-        console.debug("Native notifications not available:", err?.message || err);
+        console.error("Native daily reminder scheduling failed:", err);
         return false;
       }
     }
 
-    // Browser fallback notifier (single daily time while the tab is open)
     function startBrowserInterval() {
       if (!enabled || typeof Notification === "undefined") return;
 
@@ -117,27 +95,20 @@ export function useReminders({ enabled, time, todayComplete }) {
 
     (async () => {
       if (!enabled) {
-        // If we have native scheduled notifications previously, cancel only our ID
-        try {
-          const lnPkg = "@capacitor/local-notifications";
-          const lnMod = await import(lnPkg);
-          const LocalNotifications = lnMod.LocalNotifications || lnMod.default || lnMod;
+        if (Capacitor.isNativePlatform()) {
           try {
             const pending = await LocalNotifications.getPending();
-            const mine = (pending?.notifications || []).filter(n => n.id === 1000);
+            const mine = (pending?.notifications || []).filter((n) => n.id === 1000);
             if (mine.length) {
-              await LocalNotifications.cancel({ notifications: mine.map(n => ({ id: n.id })) });
+              await LocalNotifications.cancel({ notifications: mine.map((n) => ({ id: n.id })) });
             }
-          } catch (_) {}
-          nativeScheduledRef.current = false;
-        } catch (_) {
-          // ignore
+          } catch { /* nothing to cancel */ }
         }
         return;
       }
 
-      const nativeAvailable = await setupNative();
-      if (!nativeAvailable && !cancelled) startBrowserInterval();
+      const nativeHandled = await setupNative();
+      if (!nativeHandled && !cancelled) startBrowserInterval();
     })();
 
     return () => {

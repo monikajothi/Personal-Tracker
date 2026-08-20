@@ -12,6 +12,7 @@ import {
   BottomNav,
 } from "./components/nav-and-companion.jsx";
 
+import { App as CapacitorApp } from "@capacitor/app";
 import CategoryModal from "./components/CategoryModal.jsx";
 import DayDetailModal from "./components/DayDetailModal.jsx";
 import MicroCelebration from "./components/MicroCelebration.jsx";
@@ -252,19 +253,10 @@ function TrackerApp() {
     document.addEventListener("visibilitychange", onVis);
 
     // Capacitor app state
-    let appListener = null;
-    (async () => {
-      try {
-        const pkg = "@capacitor/app";
-        const mod = await import(pkg);
-        const AppLib = mod.App || mod.default || mod;
-        if (AppLib && typeof AppLib.addListener === "function") {
-          appListener = AppLib.addListener("appStateChange", (state) => {
-            if (state.isActive) flushQuickHydrationLogs();
-          });
-        }
-      } catch (_) {}
-    })();
+    // NEW:
+const appListenerPromise = CapacitorApp.addListener("appStateChange", (state) => {
+  if (state.isActive) flushQuickHydrationLogs();
+});
 
     // Also attempt an immediate flush on mount if the document is visible
     if (document.visibilityState === "visible") {
@@ -277,7 +269,11 @@ function TrackerApp() {
 
     return () => {
       document.removeEventListener("visibilitychange", onVis);
-      if (appListener && typeof appListener.remove === "function") appListener.remove();
+      appListenerPromise.then((appListener) => {
+        if (appListener && typeof appListener.remove === "function") {
+          appListener.remove();
+        }
+      });
       window.removeEventListener("hydration-quicklog-flush", onQuickFlush);
     };
   }, [flushQuickHydrationLogs]);

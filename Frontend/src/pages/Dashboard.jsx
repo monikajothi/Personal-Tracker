@@ -3,6 +3,7 @@ import { Panel, SectionTitle } from "../components/ui.jsx";
 import MonthWrapModal from "../components/MonthWrapModal.jsx";
 import { DEFAULT_CATEGORIES, todayStr, addDays, fmtNiceDate, isCategoryDone } from "../constants.js";
 import { useAuth } from "../hooks/useAuth.jsx";
+import { getHydrationTargetMl, glassesToMl } from "../utils/hydration.js";
 
 // Streak counts consecutive tracked days, but forgives one missed day per
 // every 7 tracked days (a "streak freeze") so one bad day doesn't erase
@@ -158,20 +159,184 @@ const StatCard = ({ theme, emoji, value, label }) => (
   </Panel>
 );
 
-function HydrationCard({ theme, todayEntry, settings }) {
-  const cupMl = settings.hydration?.cupMl || 250;
-  const targetMl = settings.hydration?.targetMl || (settings.waterTarget || 8) * cupMl;
-  const glasses = todayEntry.water?.glasses || 0;
-  const todayMl = glasses * cupMl;
-  const pct = targetMl ? Math.round((todayMl / targetMl) * 100) : 0;
+function HydrationCard({
+  theme,
+  todayEntry,
+  settings,
+}) {
+  const hydration =
+    settings.hydration || {};
+
+  const cupMl =
+    Number(hydration.cupMl) || 250;
+
+  const targetMl =
+    Number(hydration.targetMl) ||
+    2500;
+
+  const glasses =
+    Number(
+      todayEntry.water?.glasses
+    ) || 0;
+
+  const todayMl =
+    glasses * cupMl;
+
+  const pct =
+    targetMl > 0
+      ? Math.min(
+          100,
+          Math.round(
+            (todayMl / targetMl) *
+              100
+          )
+        )
+      : 0;
+
+  const currentLitres =
+    todayMl / 1000;
+
+  const targetLitres =
+    targetMl / 1000;
+
+  const remainingMl =
+    Math.max(
+      0,
+      targetMl - todayMl
+    );
+
+  const remainingLitres =
+    remainingMl / 1000;
+
 
   return (
-    <Panel theme={theme} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: 12 }}>
-      <div>
-        <div style={{ fontSize: 13.5, fontWeight: 800, color: theme.ink }}>🥤 Hydration</div>
-        <div style={{ fontSize: 12, opacity: 0.75 }}>{`${(todayMl/1000).toFixed(1)} L / ${(targetMl/1000).toFixed(1)} L — ${pct}%`}</div>
+    <Panel
+      theme={theme}
+      style={{
+        padding: 14,
+      }}
+    >
+
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent:
+            "space-between",
+          gap: 12,
+        }}
+      >
+
+        <div
+          style={{
+            minWidth: 0,
+          }}
+        >
+
+          <div
+            style={{
+              display: "flex",
+              alignItems:
+                "center",
+              gap: 7,
+
+              fontSize: 14,
+              fontWeight: 800,
+
+              color: theme.ink,
+            }}
+          >
+            💧 Hydration
+          </div>
+
+
+          <div
+            style={{
+              marginTop: 4,
+
+              fontSize: 12,
+
+              opacity: 0.7,
+            }}
+          >
+            {currentLitres.toFixed(1)} L
+            {" / "}
+            {targetLitres.toFixed(1)} L
+          </div>
+
+        </div>
+
+
+        <div
+          style={{
+            fontWeight: 800,
+            fontSize: 17,
+
+            color:
+              theme.accent,
+
+            flexShrink: 0,
+          }}
+        >
+          {pct}%
+        </div>
+
       </div>
-      <div style={{ fontWeight: 800, fontSize: 16, color: theme.accent }}>{pct}%</div>
+
+
+      {/* Progress bar */}
+
+      <div
+        style={{
+          width: "100%",
+          height: 7,
+
+          marginTop: 11,
+
+          borderRadius: 999,
+
+          background:
+            theme.bg,
+          overflow: "hidden",
+        }}
+      >
+
+        <div
+          style={{
+            width: `${pct}%`,
+            height: "100%",
+
+            borderRadius: 999,
+
+            background:
+              theme.accent,
+
+            transition:
+              "width 0.4s ease",
+          }}
+        />
+
+      </div>
+
+
+      {/* Remaining */}
+
+      <div
+        style={{
+          marginTop: 7,
+
+          fontSize: 11,
+
+          opacity: 0.55,
+        }}
+      >
+        {remainingMl > 0
+          ? `${remainingLitres.toFixed(
+              1
+            )} L remaining`
+          : "🎉 Daily target reached!"}
+      </div>
+
     </Panel>
   );
 }

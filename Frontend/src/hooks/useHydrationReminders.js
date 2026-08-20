@@ -1,9 +1,8 @@
 import { useEffect, useRef } from "react";
 import { Capacitor } from "@capacitor/core";
 import { LocalNotifications } from "@capacitor/local-notifications";
+import { getHydrationGlassMl, getHydrationTargetMl } from "../utils/hydration.js";
 
-// Static imports (see useReminders.js for why) — this was the actual
-// reason hydration notifications never appeared in the APK build.
 
 function parseTimeToday(hhmm) {
   const [h, m] = (hhmm || "08:00").split(":").map(Number);
@@ -34,6 +33,16 @@ function pushQuickLog(ml) {
   } catch { /* storage unavailable — safe to skip */ }
 }
 
+function pushQuickGlassLog(glasses) {
+  try {
+    const raw = localStorage.getItem(QUICK_LOG_KEY);
+    const arr = raw ? JSON.parse(raw) : [];
+    arr.push({ glasses: Number(glasses) || 0, ts: Date.now() });
+    if (arr.length > 50) arr.splice(0, arr.length - 50);
+    localStorage.setItem(QUICK_LOG_KEY, JSON.stringify(arr));
+  } catch { /* storage unavailable */ }
+}
+
 async function cancelHydrationNotifications() {
   if (!Capacitor.isNativePlatform()) return;
   try {
@@ -47,23 +56,30 @@ async function cancelHydrationNotifications() {
   } catch { /* nothing pending */ }
 }
 
-export function useHydrationReminders({ settings, todayMl = 0, onLogMl }) {
+export function useHydrationReminders({ settings, todayMl = 0, onLogMl, onLogGlasses }) {
   const scheduledRef = useRef(null);
   const nativeListenerRef = useRef(null);
+  const settingsRef = useRef(settings);
+  settingsRef.current = settings;
 
   useEffect(() => {
     let cancelled = false;
 
     async function scheduleNext() {
       if (!Capacitor.isNativePlatform()) return; // web fallback handled separately below
+      const permission = await LocalNotifications.requestPermissions();
+      if (permission.display !== 'granted') {
+        console.warn('Hydration reminders need notification permission.');
+        return;
+      }
       if (!settings?.hydration?.enabled) {
         await cancelHydrationNotifications();
         return;
       }
 
       const h = settings.hydration;
-      const cup = h.cupMl || 250;
-      const target = h.targetMl || (settings.waterTarget || 8) * cup;
+      const cup = getHydrationGlassMl(settings);
+      const target = getHydrationTargetMl(settings);
       const remainingMl = Math.max(0, target - (todayMl || 0));
 
       const now = new Date();
@@ -105,14 +121,26 @@ export function useHydrationReminders({ settings, todayMl = 0, onLogMl }) {
       if (quietEnd <= quietStart) quietEnd.setDate(quietEnd.getDate() + 1);
       if (when >= quietStart && when <= quietEnd) when.setTime(quietEnd.getTime());
 
-      const bodies = [
-        "A tiny sip for today's garden 🌱",
-        "Your body is asking for a little refreshment 💧",
-        "Time for a small, happy sip ✨",
-        "Hydration check — a quick glass? 🥛",
-      ];
-      const body = bodies[Math.floor(Math.random() * bodies.length)];
-      const remainingLiters = Math.max(0, Math.round(remainingMl / 100) / 10);
+      const REMINDER_BODIES = [
+  "A tiny sip for today's garden 🌱",
+  "Your body is asking for a little refreshment 💧",
+  "Time for a small, happy sip ✨",
+  "Hydration check — a quick glass? 🥛",
+  "Little sips, big glow ✨",
+  "Pssst… your plants (and you) need water 🌿",
+  "A quick water break sounds nice right now 💦",
+  "Stay glowy — sip some water 🌸",
+  "Your garden's thirsty, and so are you 🌷",
+  "Just a sip, no big deal 🥰",
+  "Water o'clock 💧⏰",
+  "Keep the streak flowing — sip time 🌊",
+];
+function getReminderBody() {
+  return REMINDER_BODIES[
+    Math.floor(Math.random() * REMINDER_BODIES.length)
+  ];
+}
+    const remainingLiters = Math.max(0, Math.round(remainingMl / 100) / 10);
 
       try {
         await cancelHydrationNotifications();
@@ -122,9 +150,9 @@ export function useHydrationReminders({ settings, todayMl = 0, onLogMl }) {
             types: [{
               id: "WATER_ACTIONS",
               actions: [
-                { id: "add250", title: "+250 ml" },
-                { id: "add500", title: "+500 ml" },
-                { id: "snooze30", title: "Snooze 30m" },
+                { id: "addGlass", title: "+1 glass", foreground: false  },
+                { id: "addTwoGlasses", title: "+2 glasses" , foreground: false },
+                { id: "snooze30", title: "Snooze 30m", foreground: false  },
               ],
             }],
           });
@@ -149,8 +177,8 @@ export function useHydrationReminders({ settings, todayMl = 0, onLogMl }) {
             notifications.push({
               id: 2000 + i,
               title: "💧 Hydration reminder",
-              body: `${body} — ${remainingLiters} L remaining`,
-              schedule: { at: new Date(nowTime + offset) },
+              body: `${getReminderBody()} — ${remainingLiters} L remaining`,
+              schedule: { at: new Date(nowTime + offset), allowWhileIdle: true },
               actionTypeId: "WATER_ACTIONS",
               channelId: "hydration",
               smallIcon: "ic_stat_notify",
@@ -160,8 +188,8 @@ export function useHydrationReminders({ settings, todayMl = 0, onLogMl }) {
           notifications.push({
             id: 2000,
             title: "💧 Hydration reminder",
-            body: `${body} — ${remainingLiters} L remaining`,
-            schedule: { at: when },
+            body: `${getReminderBody()} — ${remainingLiters} L remaining`,
+            schedule: { at: when, allowWhileIdle: true },
             actionTypeId: "WATER_ACTIONS",
             channelId: "hydration",
             smallIcon: "ic_stat_notify",
@@ -177,22 +205,20 @@ export function useHydrationReminders({ settings, todayMl = 0, onLogMl }) {
             (args) => {
               const id = args.actionId;
               if (!id) return;
-              if (id === "add250") {
-                pushQuickLog(250);
-                try { onLogMl?.(250); } catch { /* app not focused to log immediately */ }
+              if (id === "addGlass") {
+                pushQuickGlassLog(1);
                 window.dispatchEvent(new Event("hydration-quicklog-flush"));
-              } else if (id === "add500") {
-                pushQuickLog(500);
-                try { onLogMl?.(500); } catch { /* app not focused to log immediately */ }
+              } else if (id === "addTwoGlasses") {
+                pushQuickGlassLog(2);
                 window.dispatchEvent(new Event("hydration-quicklog-flush"));
               } else if (id === "snooze30") {
-                const snooze = settings?.hydration?.snoozeMin || 30;
+                const snooze = settingsRef.current?.hydration?.snoozeMin || 30;
                 LocalNotifications.schedule({
                   notifications: [{
                     id: 3000,
                     title: "💧 Hydration reminder",
-                    body: "Snoozed — time for a sip soon",
-                    schedule: { at: new Date(Date.now() + snooze * 60_000) },
+                    body: getReminderBody(),
+                    schedule: { at: new Date(Date.now() + snooze * 60_000), allowWhileIdle: true },
                     actionTypeId: "WATER_ACTIONS",
                     channelId: "hydration",
                     smallIcon: "ic_stat_notify",
@@ -209,7 +235,7 @@ export function useHydrationReminders({ settings, todayMl = 0, onLogMl }) {
 
     scheduleNext();
     return () => { cancelled = true; };
-  }, [settings, todayMl, onLogMl]);
+  }, [settings, todayMl, onLogMl, onLogGlasses]);
 
   // Web-only fallback: a single in-tab browser Notification, since there is
   // no way to schedule real background notifications from a browser tab.
@@ -220,8 +246,8 @@ export function useHydrationReminders({ settings, todayMl = 0, onLogMl }) {
     if (Notification.permission === "default") Notification.requestPermission();
 
     const h = settings.hydration;
-    const cup = h.cupMl || 250;
-    const target = h.targetMl || (settings.waterTarget || 8) * cup;
+    const cup = getHydrationGlassMl(settings);
+    const target = getHydrationTargetMl(settings);
     const remainingMl = Math.max(0, target - (todayMl || 0));
     if (remainingMl <= 0) return;
 
@@ -235,8 +261,8 @@ export function useHydrationReminders({ settings, todayMl = 0, onLogMl }) {
     if (intervalMin == null) return;
 
     const timeout = setTimeout(() => {
-      if (Notification.permission === "granted") {
-        new Notification("💧 Hydration reminder", { body: "Time for a small, happy sip ✨" });
+    if (Notification.permission === "granted") {
+        new Notification("💧 Hydration reminder", { body: getReminderBody() });
       }
     }, intervalMin * 60_000);
 

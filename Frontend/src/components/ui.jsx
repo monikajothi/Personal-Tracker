@@ -133,113 +133,429 @@ export const TimeInput = ({ value, onChange, theme, placeholder = "Choose time",
   };
 
   return (
-    <div ref={containerRef} style={{ position: "relative", ...style }}>
+    <div
+  ref={containerRef}
+  style={{
+    position: "relative",
+    width: "100%",
+    ...style,
+  }}
+>
+  {/* TIME FIELD */}
+  <button
+    type="button"
+    onClick={() => setOpen((prev) => !prev)}
+    style={{
+      width: "100%",
+      minHeight: 56,
+      display: "flex",
+      alignItems: "center",
+      gap: 12,
+
+      padding: "8px 12px",
+
+      borderRadius: 14,
+      border: `1px solid ${
+        open ? theme.accent : theme.border
+      }`,
+
+      background: theme.paper,
+
+      boxShadow: open
+        ? `0 0 0 3px ${theme.accent}18`
+        : "0 2px 8px rgba(0,0,0,0.035)",
+
+      cursor: "pointer",
+      textAlign: "left",
+
+      transition:
+        "border-color .18s ease, box-shadow .18s ease, transform .12s ease",
+
+      fontFamily: "inherit",
+    }}
+  >
+    {/* ICON */}
+    <div
+      style={{
+        width: 38,
+        height: 38,
+        flexShrink: 0,
+
+        display: "grid",
+        placeItems: "center",
+
+        borderRadius: 11,
+
+        background: `${theme.accent}12`,
+        color: theme.accent,
+
+        fontSize: 17,
+      }}
+    >
+      🕒
+    </div>
+
+    {/* TEXT */}
+    <div
+      style={{
+        minWidth: 0,
+        flex: 1,
+      }}
+    >
       <div
-        onClick={() => setOpen((prev) => !prev)}
         style={{
-          minWidth: 180,
-          borderRadius: 18,
-          border: `1.5px solid ${theme.border}`,
-          background: theme.bg,
-          padding: "14px 16px",
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          cursor: "pointer",
+          fontSize: 14,
+          fontWeight: 800,
+          lineHeight: 1.2,
+          color: theme.ink,
+
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
         }}
       >
-        <div style={{
-          width: 38,
-          height: 38,
-          borderRadius: "50%",
-          background: theme.soft,
-          display: "grid",
-          placeItems: "center",
-          fontSize: 18,
-        }}>
-          🕒
+        {formatted || placeholder}
+      </div>
+
+      <div
+        style={{
+          marginTop: 3,
+
+          fontSize: 10.5,
+          fontWeight: 600,
+
+          color: theme.ink,
+          opacity: 0.48,
+        }}
+      >
+        {formatted
+          ? "12-hour format"
+          : "Select a time"}
+      </div>
+    </div>
+
+    {/* CHEVRON */}
+    <div
+      style={{
+        flexShrink: 0,
+
+        width: 26,
+        height: 26,
+
+        display: "grid",
+        placeItems: "center",
+
+        borderRadius: 8,
+
+        background: theme.soft,
+
+        color: theme.ink,
+        opacity: 0.55,
+
+        fontSize: 12,
+
+        transform: open
+          ? "rotate(180deg)"
+          : "rotate(0deg)",
+
+        transition: "transform .2s ease",
+      }}
+    >
+      ↓
+    </div>
+  </button>
+
+
+  {/* =================================================
+      DROPDOWN
+  ================================================= */}
+
+  {open && (
+    <div
+      style={{
+        position: "absolute",
+
+        zIndex: 100,
+
+        top: "calc(100% + 7px)",
+        left: 0,
+
+        width: "100%",
+        minWidth: 280,
+
+        padding: 12,
+
+        borderRadius: 16,
+
+        background: theme.paper,
+
+        border: `1px solid ${theme.border}`,
+
+        boxShadow:
+          "0 18px 45px rgba(0,0,0,0.12), 0 3px 10px rgba(0,0,0,0.04)",
+
+        animation:
+          "mwt-time-picker-in .16s ease-out",
+      }}
+    >
+
+      {/* HEADER */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+
+          marginBottom: 10,
+          padding: "2px 2px 4px",
+        }}
+      >
+        <div
+          style={{
+            fontSize: 12,
+            fontWeight: 800,
+            color: theme.ink,
+          }}
+        >
+          Select time
         </div>
-        <div style={{ minWidth: 0, overflow: "hidden" }}>
-          <div style={{ fontSize: 14, fontWeight: 700, color: theme.ink, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-            {formatted || placeholder}
-          </div>
-          <div style={{ fontSize: 12, color: theme.ink, opacity: 0.65, marginTop: 2 }}>
-            {formatted ? "12-hour clock" : "Tap to choose a time"}
-          </div>
+
+        <div
+          style={{
+            fontSize: 10,
+            fontWeight: 700,
+            color: theme.accent,
+          }}
+        >
+          {formatted || "--:--"}
         </div>
       </div>
 
-      {open && (
-        <div style={{
-          position: "absolute",
-          zIndex: 10,
-          top: "calc(100% + 10px)",
-          left: 0,
-          width: 280,
-          borderRadius: 18,
-          background: theme.paper,
-          border: `1.5px solid ${theme.border}`,
-          boxShadow: "0 14px 32px rgba(0,0,0,0.12)",
-          padding: 16,
-        }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
-            <div style={{ display: "grid", gap: 6 }}>
-              <div style={{ fontSize: 12.5, color: theme.ink, opacity: 0.75 }}>Hour</div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(6, minmax(0, 1fr))", gap: 6 }}>
-                {Array.from({ length: 12 }, (_, i) => i + 1).map((h) => (
-                  <button key={h} onClick={() => handleHour(h)} style={{
-                    borderRadius: 10,
-                    border: `1px solid ${hour === h ? theme.accent : theme.border}`,
-                    background: hour === h ? theme.accent : theme.soft,
-                    color: hour === h ? "#fff" : theme.ink,
-                    padding: "8px 0",
-                    cursor: "pointer",
-                    fontSize: 12,
-                    fontWeight: 700,
-                  }}>{h}</button>
-                ))}
-              </div>
-            </div>
 
-            <div style={{ display: "grid", gap: 6 }}>
-              <div style={{ fontSize: 12.5, color: theme.ink, opacity: 0.75 }}>Minute</div>
-              <select value={minute} onChange={(e) => handleMinute(Number(e.target.value))} style={{
-                width: "100%",
-                padding: "10px 12px",
-                borderRadius: 14,
-                border: `1.5px solid ${theme.border}`,
-                background: theme.bg,
-                color: theme.ink,
-                fontSize: 13,
-                appearance: "none",
-              }}>
-                {Array.from({ length: 12 }, (_, i) => i * 5).map((m) => (
-                  <option key={m} value={m}>{String(m).padStart(2, "0")}</option>
-                ))}
-              </select>
-            </div>
+      {/* HOUR + MINUTE */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1.3fr .7fr",
+          gap: 10,
+        }}
+      >
+
+        {/* HOUR */}
+        <div>
+          <div
+            style={{
+              marginBottom: 6,
+
+              fontSize: 10,
+              fontWeight: 800,
+
+              color: theme.ink,
+              opacity: 0.5,
+
+              textTransform: "uppercase",
+              letterSpacing: ".05em",
+            }}
+          >
+            Hour
           </div>
 
-          <div style={{ display: "flex", gap: 10 }}>
-            {[
-              { label: "AM", value: true },
-              { label: "PM", value: false },
-            ].map((option) => (
-              <button key={option.label} onClick={() => handleAmPm(option.value)} style={{
-                flex: 1,
-                padding: "10px 0",
-                borderRadius: 14,
-                border: `1.5px solid ${am === option.value ? theme.accent : theme.border}`,
-                background: am === option.value ? theme.accent : theme.soft,
-                color: am === option.value ? "#fff" : theme.ink,
-                fontWeight: 700,
-                cursor: "pointer",
-              }}>{option.label}</button>
-            ))}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns:
+                "repeat(4, 1fr)",
+              gap: 5,
+            }}
+          >
+            {Array.from(
+              { length: 12 },
+              (_, i) => i + 1
+            ).map((h) => {
+              const selected = hour === h;
+
+              return (
+                <button
+                  key={h}
+                  type="button"
+                  onClick={() =>
+                    handleHour(h)
+                  }
+                  style={{
+                    height: 32,
+
+                    borderRadius: 8,
+
+                    border: selected
+                      ? `1px solid ${theme.accent}`
+                      : `1px solid ${theme.border}`,
+
+                    background: selected
+                      ? theme.accent
+                      : theme.bg,
+
+                    color: selected
+                      ? "#fff"
+                      : theme.ink,
+
+                    fontSize: 11,
+                    fontWeight: 800,
+
+                    cursor: "pointer",
+
+                    transition:
+                      "all .12s ease",
+                  }}
+                >
+                  {h}
+                </button>
+              );
+            })}
           </div>
         </div>
-      )}
+
+
+        {/* MINUTE */}
+        <div>
+          <div
+            style={{
+              marginBottom: 6,
+
+              fontSize: 10,
+              fontWeight: 800,
+
+              color: theme.ink,
+              opacity: 0.5,
+
+              textTransform: "uppercase",
+              letterSpacing: ".05em",
+            }}
+          >
+            Minute
+          </div>
+
+          <select
+            value={minute}
+            onChange={(e) =>
+              handleMinute(
+                Number(e.target.value)
+              )
+            }
+            style={{
+              width: "100%",
+              height: 32,
+
+              padding: "0 9px",
+
+              borderRadius: 8,
+
+              border:
+                `1px solid ${theme.border}`,
+
+              background: theme.bg,
+              color: theme.ink,
+
+              fontSize: 11,
+              fontWeight: 800,
+
+              outline: "none",
+              cursor: "pointer",
+            }}
+          >
+            {Array.from(
+              { length: 12 },
+              (_, i) => i * 5
+            ).map((m) => (
+              <option
+                key={m}
+                value={m}
+              >
+                {String(m).padStart(
+                  2,
+                  "0"
+                )}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+
+      {/* AM / PM */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+
+          gap: 6,
+
+          marginTop: 10,
+
+          padding: 4,
+
+          borderRadius: 10,
+
+          background: theme.bg,
+        }}
+      >
+        {[
+          {
+            label: "AM",
+            value: true,
+          },
+          {
+            label: "PM",
+            value: false,
+          },
+        ].map((option) => {
+          const selected =
+            am === option.value;
+
+          return (
+            <button
+              key={option.label}
+              type="button"
+              onClick={() =>
+                handleAmPm(
+                  option.value
+                )
+              }
+              style={{
+                height: 30,
+
+                border: "none",
+                borderRadius: 7,
+
+                background: selected
+                  ? theme.paper
+                  : "transparent",
+
+                color: selected
+                  ? theme.accent
+                  : theme.ink,
+
+                fontSize: 11,
+                fontWeight: 800,
+
+                cursor: "pointer",
+
+                boxShadow: selected
+                  ? "0 1px 4px rgba(0,0,0,.08)"
+                  : "none",
+
+                transition:
+                  "all .15s ease",
+              }}
+            >
+              {option.label}
+            </button>
+          );
+        })}
+      </div>
+
     </div>
+  )}
+</div>
   );
 };
 

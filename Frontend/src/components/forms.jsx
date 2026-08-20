@@ -33,10 +33,11 @@ export function SleepForm({ data, onChange, theme }) {
   );
 }
 
-export function WaterForm({ data, onChange, theme, target, onTargetChange }) {
+export function WaterForm({ data, onChange, theme, target, onTargetChange, hydrationTargetMl }) {
   const glasses = data?.glasses || 0;
   const pct = Math.min(1, glasses / (target || 8));
   const stage = pct >= 1 ? "🩵" : pct >= 0.5 ? "💧" : "🥛";
+  const glassMl = Math.round((Number(hydrationTargetMl) || 2000) / 8);
   return (
     <div style={{ display: "grid", gap: 14 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
@@ -46,6 +47,7 @@ export function WaterForm({ data, onChange, theme, target, onTargetChange }) {
             <div style={{ width: `${pct * 100}%`, height: "100%", background: theme.accent2, transition: "width 0.3s" }} />
           </div>
           <div style={{ fontSize: 12.5, marginTop: 4, opacity: 0.7 }}>{glasses} / {target} glasses today</div>
+          <div style={{ fontSize: 11.5, marginTop: 2, opacity: 0.58 }}>1 glass = {glassMl} ml</div>
         </div>
       </div>
       <Stepper value={glasses} onChange={(v) => onChange({ glasses: v })} theme={theme} unit="glasses" max={40} />

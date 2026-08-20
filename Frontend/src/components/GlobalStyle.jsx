@@ -18,6 +18,17 @@ export const GlobalStyle = () => (
     @keyframes mwt-sway { 0%,100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }
     @keyframes mwt-fadeup { 0% { opacity: 0; transform: translateY(8px);} 100% { opacity: 1; transform: translateY(0);} }
     @keyframes mwt-fade-down { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(10px); } }
+    @keyframes mwt-time-picker-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
     @keyframes mwt-page-enter {
       0% { opacity: 0; transform: translateY(10px) scale(0.985); }
       100% { opacity: 1; transform: translateY(0) scale(1); }
@@ -286,6 +297,469 @@ body {
 
 .mwt [style*="position: fixed"] {
   max-width: 100vw;
+}
+  /* =========================================================
+   SETTINGS PAGE
+========================================================= */
+
+.settings-page {
+  width: 100%;
+  max-width: 100%;
+  padding-bottom: 110px;
+}
+
+.settings-section-title {
+  font-size: 15px;
+  font-weight: 800;
+  margin-bottom: 10px;
+  color: inherit;
+}
+
+.settings-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.settings-logout {
+  padding: 9px 15px;
+  border-radius: 12px;
+  border: 1.5px solid;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.settings-help {
+  margin: 7px 0 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  opacity: 0.55;
+}
+
+
+/* =========================================================
+   COMPACT HYDRATION UI
+========================================================= */
+
+.hydration-compact-grid {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(0, 1fr)
+    minmax(150px, 0.85fr);
+
+  gap: 8px;
+  width: 100%;
+}
+
+
+.hydration-compact-grid.four {
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+}
+
+
+.hydration-compact-field {
+  min-width: 0;
+}
+
+
+.hydration-compact-field label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  margin-bottom: 4px;
+
+  font-size: 10.5px;
+  font-weight: 800;
+
+  opacity: 0.62;
+}
+
+
+.hydration-compact-field small {
+  display: block;
+
+  margin-top: 3px;
+
+  font-size: 9.5px;
+
+  opacity: 0.48;
+}
+
+
+/* =========================================================
+   COMPACT INPUT
+========================================================= */
+
+.hydration-compact-input {
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+
+  width: 100%;
+
+  border:
+    1px solid
+    var(--hydration-border, #d9dfd2);
+
+  border-radius: 10px;
+
+  background:
+    var(--hydration-input-bg, #fff);
+
+  overflow: hidden;
+
+  transition:
+    border-color .15s ease,
+    box-shadow .15s ease;
+}
+
+
+.hydration-compact-input:focus-within {
+  border-color: #7fa17a;
+
+  box-shadow:
+    0 0 0 2px
+    rgba(127,161,122,.10);
+}
+
+
+.hydration-compact-input input {
+  min-width: 0;
+  width: 100%;
+
+  flex: 1;
+
+  height: 100%;
+
+  padding:
+    7px 9px;
+
+  border: 0;
+  outline: 0;
+
+  background: transparent;
+
+  color: inherit;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+
+.hydration-compact-input span {
+  flex-shrink: 0;
+
+  padding-right: 9px;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  opacity: .45;
+}
+
+
+.hydration-compact-input input::-webkit-inner-spin-button,
+.hydration-compact-input input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.hydration-compact-input input[type="number"] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+
+/* =========================================================
+   CALCULATED RESULT
+========================================================= */
+
+.hydration-result-box {
+  min-width: 0;
+
+  min-height: 38px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  padding:
+    6px 9px;
+
+  border-radius: 10px;
+
+  background:
+    rgba(127,161,122,.08);
+
+  border:
+    1px solid
+    rgba(127,161,122,.12);
+}
+
+
+.hydration-result-icon {
+  width: 28px;
+  height: 28px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background:
+    rgba(127,161,122,.12);
+
+  font-size: 14px;
+}
+
+
+.hydration-result-box strong {
+  display: block;
+
+  font-size: 11px;
+  font-weight: 800;
+}
+
+
+.hydration-result-box small {
+  display: block;
+
+  margin-top: 1px;
+
+  font-size: 9px;
+
+  opacity: .55;
+}
+
+
+/* =========================================================
+   ADVANCED ROW
+========================================================= */
+
+.hydration-advanced-row {
+  display: grid;
+
+  grid-template-columns:
+    minmax(150px, 1fr)
+    minmax(110px, .65fr)
+    minmax(210px, 1.2fr);
+
+  align-items: end;
+
+  gap: 10px;
+
+  padding-top: 2px;
+}
+
+
+.hydration-adaptive {
+  min-width: 0;
+}
+
+
+.hydration-compact-field.repeat {
+  min-width: 0;
+}
+
+
+/* =========================================================
+   OPTIONAL LABEL
+========================================================= */
+
+.optional-label {
+  font-size: 8px;
+
+  font-weight: 600;
+
+  opacity: .45;
+}
+
+
+/* =========================================================
+   QUIET HOURS
+========================================================= */
+
+.hydration-quiet-compact {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+
+  gap: 5px;
+
+  min-height: 38px;
+
+  padding:
+    3px 7px;
+
+  border-radius: 10px;
+
+  background:
+    rgba(120,100,140,.055);
+
+  border:
+    1px solid
+    rgba(120,100,140,.08);
+}
+
+
+.quiet-label {
+  flex-shrink: 0;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  opacity: .6;
+}
+
+
+.quiet-dash {
+  font-size: 10px;
+
+  opacity: .4;
+}
+
+
+/* Make TimeInput fit compact rows */
+
+.hydration-quiet-compact > * {
+  min-width: 0;
+}
+
+
+.hydration-quiet-compact input {
+  min-width: 0;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 700px) {
+
+  .hydration-compact-grid {
+    grid-template-columns:
+      1fr 1fr;
+
+    gap: 7px;
+  }
+
+
+  .hydration-result-box {
+    grid-column: 1 / -1;
+  }
+
+
+  .hydration-compact-grid.four {
+    grid-template-columns:
+      1fr 1fr;
+  }
+
+
+  .hydration-advanced-row {
+    grid-template-columns:
+      1fr 1fr;
+  }
+
+
+  .hydration-adaptive {
+    grid-column: 1 / -1;
+  }
+
+
+  .hydration-quiet-compact {
+    grid-column: 1 / -1;
+  }
+
+}
+
+
+/* =========================================================
+   SMALL PHONES
+========================================================= */
+
+@media (max-width: 430px) {
+
+  .hydration-compact-grid {
+    grid-template-columns:
+      1fr 1fr;
+  }
+
+
+  .hydration-compact-grid.four {
+    grid-template-columns:
+      1fr 1fr;
+  }
+
+
+  .hydration-advanced-row {
+    grid-template-columns:
+      1fr 1fr;
+  }
+
+
+  .hydration-compact-input {
+    height: 36px;
+  }
+
+
+  .hydration-compact-input input {
+    font-size: 12px;
+    padding: 6px 7px;
+  }
+
+
+  .hydration-compact-input span {
+    padding-right: 7px;
+  }
+
+
+  .hydration-result-box {
+    padding: 5px 7px;
+  }
+
+
+  .hydration-result-icon {
+    width: 25px;
+    height: 25px;
+
+    font-size: 12px;
+  }
+
+}
+
+
+/* =========================================================
+   VERY SMALL PHONES
+========================================================= */
+
+@media (max-width: 350px) {
+
+  .hydration-compact-grid,
+  .hydration-compact-grid.four,
+  .hydration-advanced-row {
+    grid-template-columns:
+      1fr;
+  }
+
+
+  .hydration-result-box,
+  .hydration-adaptive,
+  .hydration-quiet-compact {
+    grid-column: auto;
+  }
+
 }
   `}</style>
 );

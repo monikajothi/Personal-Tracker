@@ -30,6 +30,7 @@ import {
   isCategoryDone,
   COMPANIONS,
 } from "./constants.js";
+import { glassesToMl, mlToGlasses } from "./utils/hydration.js";
 
 /* =========================================================
    LAZY LOAD PAGES
@@ -228,10 +229,10 @@ function TrackerApp() {
       const logs = JSON.parse(raw || "[]");
       if (!Array.isArray(logs) || logs.length === 0) return;
 
-      // Sum ml and convert to glasses based on cup size
-      const cupMl = settings.hydration?.cupMl || 250;
+      // Sum cached actions into the same 8-glass model used by the water card.
       const totalMl = logs.reduce((s, l) => s + (Number(l.ml) || 0), 0);
-      const addGlasses = Math.round(totalMl / cupMl);
+      const totalGlasses = logs.reduce((s, l) => s + (Number(l.glasses) || 0), 0);
+      const addGlasses = totalGlasses + mlToGlasses(totalMl, settings);
       if (addGlasses > 0) {
         const current = todayEntry.water?.glasses || 0;
         saveCategory(t, "water", { glasses: current + addGlasses });
@@ -314,15 +315,18 @@ const appListenerPromise = CapacitorApp.addListener("appStateChange", (state) =>
   // Hydration reminders: schedules adaptive water reminders based on
   // settings and today's logged water. Uses native LocalNotifications
   // when available and falls back to browser notifications.
-  const cupMl = settings.hydration?.cupMl || 250;
-  const todayMl = (todayEntry.water?.glasses || 0) * cupMl;
+  const todayMl = glassesToMl(todayEntry.water?.glasses || 0, settings);
 
   const logWaterMl = (ml) => {
-    const addGlasses = Math.round(ml / cupMl);
+    const addGlasses = mlToGlasses(ml, settings);
     saveCategory(t, "water", { glasses: (todayEntry.water?.glasses || 0) + addGlasses });
   };
 
-  useHydrationReminders({ settings, todayMl, onLogMl: logWaterMl });
+  const logWaterGlasses = (glasses) => {
+    saveCategory(t, "water", { glasses: (todayEntry.water?.glasses || 0) + glasses });
+  };
+
+  useHydrationReminders({ settings, todayMl, onLogMl: logWaterMl, onLogGlasses: logWaterGlasses });
 
   /* =======================================================
      CATEGORY ACTIONS
@@ -375,6 +379,22 @@ const appListenerPromise = CapacitorApp.addListener("appStateChange", (state) =>
     setDayDetailOpen(false);
     setSelectedDay(null);
   }, []);
+React.useEffect(() => {
+    const backListenerPromise = CapacitorApp.addListener("backButton", () => {
+      if (activeCategory) {
+        closeModal();
+      } else if (dayDetailOpen) {
+        closeDayDetail();
+      } else if (tab !== "home") {
+        setTab("home");
+      } else {
+        CapacitorApp.exitApp();
+      }
+    });
+    return () => {
+      backListenerPromise.then((l) => l.remove());
+    };
+  }, [activeCategory, dayDetailOpen, tab, closeModal, closeDayDetail]);
 
   const openCategoryForSelectedDay = useCallback(
     (category) => {
@@ -558,14 +578,10 @@ const appListenerPromise = CapacitorApp.addListener("appStateChange", (state) =>
             saveCategoryWithCelebration
           }
           waterTarget={
-            settings.waterTarget
+            8
           }
-          onWaterTarget={(value) =>
-            saveSettings({
-              ...settings,
-              waterTarget: value,
-            })
-          }
+          onWaterTarget={null}
+          hydrationTargetMl={settings.hydration?.targetMl}
           getHistory={() =>
             getHistory(editingDay)
           }

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { CATEGORY_FORMS, WaterForm } from "./forms.jsx";
 import { fmtNiceDate } from "../constants.js";
 
-export default function CategoryModal({ theme, category, dayEntry, onClose, onSave, waterTarget, onWaterTarget, getHistory }) {
+export default function CategoryModal({ theme, category, dayEntry, onClose, onSave, waterTarget, onWaterTarget, hydrationTargetMl, getHistory }) {
   const [local, setLocal] = useState(dayEntry?.[category.id] || {});
   const [history, setHistory] = useState(null);
   const [showHistory, setShowHistory] = useState(false);
@@ -34,7 +34,7 @@ export default function CategoryModal({ theme, category, dayEntry, onClose, onSa
         </div>
 
         {category.id === "water"
-          ? <WaterForm data={local} onChange={save} theme={theme} target={waterTarget} onTargetChange={onWaterTarget} />
+          ? <WaterForm data={local} onChange={save} theme={theme} target={waterTarget} onTargetChange={onWaterTarget} hydrationTargetMl={hydrationTargetMl} />
           : Form
             ? <Form data={local} onChange={save} theme={theme} />
             : <p style={{ color: theme.ink, opacity: 0.6 }}>Tap the card on the dashboard to toggle this habit.</p>}

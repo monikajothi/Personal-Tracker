@@ -22,7 +22,7 @@ const settingsSchema = new mongoose.Schema(
       startTime: { type: String, default: "08:00" },
       endTime: { type: String, default: "20:00" },
       minIntervalMin: { type: Number, default: 30 },
-      maxIntervalMin: { type: Number, default: 180 },
+      maxIntervalMin: { type: Number, default: 60 },
       snoozeMin: { type: Number, default: 30 },
       adaptive: { type: Boolean, default: true },
       repeatEveryMin: { type: Number, default: null },

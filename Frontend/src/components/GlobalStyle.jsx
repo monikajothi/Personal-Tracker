@@ -394,6 +394,10 @@ body {
    COMPACT INPUT
 ========================================================= */
 
+/* =========================================================
+   COMPACT INPUT
+========================================================= */
+
 .hydration-compact-input {
   height: 38px;
 
@@ -401,6 +405,7 @@ body {
   align-items: center;
 
   width: 100%;
+  min-width: 0;
 
   border:
     1px solid
@@ -412,6 +417,8 @@ body {
     var(--hydration-input-bg, #fff);
 
   overflow: hidden;
+
+  box-sizing: border-box;
 
   transition:
     border-color .15s ease,
@@ -428,11 +435,24 @@ body {
 }
 
 
+/* =========================================================
+   NUMBER INPUT
+========================================================= */
+
 .hydration-compact-input input {
   min-width: 0;
-  width: 100%;
 
-  flex: 1;
+  /*
+   * IMPORTANT:
+   * Do not use width: 100% here.
+   *
+   * The input and the ml/min suffix are siblings
+   * inside a flex container.
+   */
+  width: 0;
+
+  flex:
+    1 1 auto;
 
   height: 100%;
 
@@ -444,38 +464,77 @@ body {
 
   background: transparent;
 
-  color: inherit;
+  color:
+    var(
+      --hydration-input-color,
+      #403742
+    );
+
+  -webkit-text-fill-color:
+    var(
+      --hydration-input-color,
+      #403742
+    );
 
   font-family: inherit;
+
   font-size: 13px;
+
   font-weight: 700;
+
+  box-sizing: border-box;
 }
 
 
-.hydration-compact-input span {
-  flex-shrink: 0;
+/* =========================================================
+   UNIT — ml / min
+========================================================= */
 
-  padding-right: 9px;
+.hydration-compact-input > span {
+  flex:
+    0 0 auto;
+
+  width: auto;
+
+  min-width: 24px;
+
+  padding:
+    0 9px 0 3px;
 
   font-size: 9px;
+
+  line-height: 1;
+
   font-weight: 800;
 
+  white-space: nowrap;
+
+  text-align: right;
+
   opacity: .45;
+
+  box-sizing: border-box;
 }
 
+
+/* =========================================================
+   NUMBER SPINNER RESET
+========================================================= */
 
 .hydration-compact-input input::-webkit-inner-spin-button,
 .hydration-compact-input input::-webkit-outer-spin-button {
   -webkit-appearance: none;
+
   margin: 0;
 }
 
+
 .hydration-compact-input input[type="number"] {
   appearance: textfield;
-  -moz-appearance: textfield;
+
+  -moz-appearance:
+    textfield;
 }
-
-
 /* =========================================================
    CALCULATED RESULT
 ========================================================= */

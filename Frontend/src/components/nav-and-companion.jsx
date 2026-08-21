@@ -22,23 +22,67 @@ export function Companion({ theme, animationsOn, kind, user, entries, todayCompl
     }, 4800);
   };
 
-  return (
-    <div style={{
-    position: "fixed",
-    bottom: 85,
-    left: 18,
-    zIndex: 10000,
-    userSelect: "none",
-    pointerEvents: "auto"
-  }}>
-      {msg && (
-        <div className={closing ? "mwt-fade-down font-hand" : "mwt-fadeup font-hand"} style={{ position: "absolute", bottom: 46, left: 0, background: theme.paper, border: `1.5px solid ${theme.border}`, borderRadius: 14, padding: "8px 14px", fontSize: 18, color: theme.ink, whiteSpace: "nowrap", boxShadow: "0 4px 14px rgba(0,0,0,0.1)" }}>{msg}</div>
-      )}
-      <button onClick={say} title="pspsps" style={{ fontSize: 32, background: "none", border: "none", cursor: "pointer", filter: "drop-shadow(0 3px 4px rgba(0,0,0,0.15))" }} className={animationsOn ? "mwt-float" : ""}>
-        {emoji}
-      </button>
-    </div>
-  );
+ return (
+  <div
+    style={{
+      position: "fixed",
+      bottom: 78,
+      left: 12,
+      zIndex: 10000,
+      userSelect: "none",
+      pointerEvents: "auto",
+    }}
+  >
+    {msg && (
+      <div
+        className={
+          closing
+            ? "mwt-fade-down font-hand"
+            : "mwt-fadeup font-hand"
+        }
+        style={{
+          position: "absolute",
+          bottom: 34,
+          left: 0,
+          background: theme.paper,
+          border: `1px solid ${theme.border}`,
+          borderRadius: 10,
+          padding: "5px 9px",
+          fontSize: 13,
+          color: theme.ink,
+          whiteSpace: "nowrap",
+          boxShadow:
+            "0 3px 10px rgba(0,0,0,0.1)",
+        }}
+      >
+        {msg}
+      </div>
+    )}
+
+    <button
+      onClick={say}
+      title="pspsps"
+      style={{
+        fontSize: 22,
+        lineHeight: 1,
+        padding: 2,
+        margin: 0,
+        background: "none",
+        border: "none",
+        cursor: "pointer",
+        filter:
+          "drop-shadow(0 2px 3px rgba(0,0,0,0.15))",
+      }}
+      className={
+        animationsOn
+          ? "mwt-float"
+          : ""
+      }
+    >
+      {emoji}
+    </button>
+  </div>
+);
 }
 
 export function FloatingDecor({ animationsOn, themeKey }) {

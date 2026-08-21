@@ -3,6 +3,10 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Panel, SectionTitle } from "./ui.jsx";
 import { analyticsApi } from "../api/index.js";
 import { addDays, todayStr } from "../constants.js";
+import {
+  getCycleHistoryCache,
+  setCycleHistoryCache,
+} from "../utils/localStore.js";
 
 const PERIOD_DOT = "#D9667A";
 const FERTILE_DOT = "#8FBFB5";
@@ -10,26 +14,132 @@ const OVULATION_DOT = "#3F8F80";
 const NORMAL_MIN = 21;
 const NORMAL_MAX = 35;
 
-export default function CycleInsights({ theme }) {
+export default function CycleInsights({
+  theme,
+  userId,
+}) {
   const [data, setData] = useState(null);
-  useEffect(() => { analyticsApi.cycleHistory().then(setData).catch(() => setData({ hasData: false })); }, []);
+
+  useEffect(() => {
+    if (!userId) {
+      setData({
+        hasData: false,
+        message:
+          "Log period days to see cycle insights.",
+      });
+
+      return;
+    }
+
+    let alive = true;
+
+    /*
+      ========================================================
+      1. LOCAL FIRST
+      ========================================================
+    */
+
+    const cached =
+      getCycleHistoryCache(userId);
+
+    if (cached) {
+      setData(cached);
+    }
+
+    /*
+      ========================================================
+      2. BACKGROUND SERVER REFRESH
+      ========================================================
+    */
+
+    analyticsApi
+      .cycleHistory()
+      .then((freshData) => {
+        if (!alive) return;
+
+        if (freshData) {
+          setData(freshData);
+
+          setCycleHistoryCache(
+            userId,
+            freshData
+          );
+        }
+      })
+      .catch((err) => {
+        console.warn(
+          "[CycleInsights] Background refresh failed:",
+          err
+        );
+
+        /*
+          If we already have cached data,
+          DON'T replace it with an error state.
+        */
+
+        if (!cached && alive) {
+          setData({
+            hasData: false,
+            message:
+              "Log period days to see cycle insights.",
+          });
+        }
+      });
+
+    return () => {
+      alive = false;
+    };
+  }, [userId]);
 
   if (!data) return null;
 
   if (!data.hasData) {
     return (
-      <Panel theme={theme} style={{ marginBottom: 14, textAlign: "center", padding: 24 }}>
-        <div style={{ fontSize: 26 }}>🩷</div>
-        <p style={{ color: theme.ink, opacity: 0.7, fontSize: 13, margin: "6px 0 0" }}>{data.message || "Log period days to see cycle insights."}</p>
+      <Panel
+        theme={theme}
+        style={{
+          marginBottom: 14,
+          textAlign: "center",
+          padding: 24,
+        }}
+      >
+        <div style={{ fontSize: 26 }}>
+          🩷
+        </div>
+
+        <p
+          style={{
+            color: theme.ink,
+            opacity: 0.7,
+            fontSize: 13,
+            margin: "6px 0 0",
+          }}
+        >
+          {data.message ||
+            "Log period days to see cycle insights."}
+        </p>
       </Panel>
     );
   }
 
   return (
     <>
-      <CycleHeroCard theme={theme} data={data} />
-      {data.cycles.length >= 2 && <CycleTrendsChart theme={theme} data={data} />}
-      <CycleHistoryList theme={theme} data={data} />
+      <CycleHeroCard
+        theme={theme}
+        data={data}
+      />
+
+      {data.cycles.length >= 2 && (
+        <CycleTrendsChart
+          theme={theme}
+          data={data}
+        />
+      )}
+
+      <CycleHistoryList
+        theme={theme}
+        data={data}
+      />
     </>
   );
 }

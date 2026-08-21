@@ -4,6 +4,7 @@ import MonthWrapModal from "../components/MonthWrapModal.jsx";
 import { DEFAULT_CATEGORIES, todayStr, addDays, fmtNiceDate, isCategoryDone } from "../constants.js";
 import { useAuth } from "../hooks/useAuth.jsx";
 import { getHydrationTargetMl, glassesToMl } from "../utils/hydration.js";
+import HydrationWaterCard from "../components/HydrationWaterCard.jsx";
 
 // Streak counts consecutive tracked days, but forgives one missed day per
 // every 7 tracked days (a "streak freeze") so one bad day doesn't erase

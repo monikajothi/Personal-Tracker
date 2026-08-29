@@ -255,3 +255,20 @@ export const EXPENSE_CATEGORIES = [
   { v: "Other", emoji: "✨" },
 ];
 
+export const INCOME_CATEGORIES = [
+  { v: "Salary", emoji: "💼" },
+  { v: "Freelance", emoji: "🧑‍💻" },
+  { v: "Gift", emoji: "🎁" },
+  { v: "Investment", emoji: "📈" },
+  { v: "Other", emoji: "✨" },
+];
+
+export const CATEGORY_COLORS = {
+  Food: "#e08e6d", Transport: "#7ba7d9", Shopping: "#c98fd1", Bills: "#e0c26d",
+  Health: "#6dd9a0", Entertainment: "#d96d9a",
+  Salary: "#5fb87a", Freelance: "#5f9fb8", Gift: "#d95f9a", Investment: "#b8935f",
+  Other: "#a0a0a0",
+};
+export function colorForCategory(cat) {
+  return CATEGORY_COLORS[cat] || "#a0a0a0";
+}

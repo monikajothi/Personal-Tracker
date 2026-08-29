@@ -11,9 +11,11 @@ function monthRange(offset = 0) {
   return { start, end, label: target.toLocaleDateString(undefined, { month: "long", year: "numeric" }) };
 }
 
+const emptySummary = { totalExpense: 0, totalIncome: 0, net: 0, count: 0, byCategory: { expense: {}, income: {} } };
+
 export function useTransactions(enabled, monthOffset = 0) {
   const [transactions, setTransactions] = useState([]);
-  const [summary, setSummary] = useState({ total: 0, count: 0, byCategory: {} });
+  const [summary, setSummary] = useState(emptySummary);
   const [loaded, setLoaded] = useState(false);
   const { start, end, label } = monthRange(monthOffset);
 
@@ -36,11 +38,14 @@ export function useTransactions(enabled, monthOffset = 0) {
     });
   }, [enabled, refetch]);
 
-  const addTransaction = useCallback(async ({ amount, category, note, date }) => {
-    const optimistic = { _id: `temp-${Date.now()}`, amount, category, note, date: date || todayStr() };
+  const addTransaction = useCallback(async ({ amount, category, note, date, type }) => {
+    const optimistic = {
+      _id: `temp-${Date.now()}`, amount, category, note,
+      type: type || "expense", date: date || todayStr(),
+    };
     setTransactions((prev) => [optimistic, ...prev]);
     try {
-      await transactionsApi.create({ amount, category, note, date: date || todayStr() });
+      await transactionsApi.create({ amount, category, note, type: type || "expense", date: date || todayStr() });
       await refetch();
     } catch (err) {
       console.error("Failed to add transaction:", err);

@@ -393,7 +393,7 @@ const [profileOpen, setProfileOpen] = useState(false);
                 }
                 style={{
     padding: "5px 10px",
-    fontSize: 11,
+    fontSize: 13,
     minHeight: 28,
     borderRadius: 10,
   }}
@@ -436,84 +436,61 @@ const [profileOpen, setProfileOpen] = useState(false);
       ================================================= */}
 
       <Panel
-        theme={theme}
-        style={{
-          marginBottom: 14,
-        }}
-      >
-        <div className="settings-section-title">
-          🐾 Companion
-        </div>
-
-        <div className="settings-chip-row">
-          <Chip
-            theme={theme}
-            active={
-              settings.companion ===
-              "cat"
-            }
-            onClick={() =>
-              onChange({
-                ...settings,
-                companion: "cat",
-              })
-            }
-            style={{
-    padding: "5px 10px",
-    fontSize: 11,
-    minHeight: 28,
-    borderRadius: 10,
+  theme={theme}
+  style={{
+    marginBottom: 14,
   }}
-          >
-            🐱 Kitty
-          </Chip>
+>
+  <div className="settings-section-title">
+    🐾 Companion
+  </div>
 
-          <Chip
-            theme={theme}
-            active={
-              settings.companion ===
-              "dog"
-            }
-            onClick={() =>
-              onChange({
-                ...settings,
-                companion: "dog",
-              })
-            }
-            style={{
-    padding: "5px 10px",
-    fontSize: 11,
-    minHeight: 28,
-    borderRadius: 10,
-  }}
-          >
-            🐶 Puppy
-          </Chip>
-        </div>
+  <div className="settings-chip-row">
+    <Chip
+      theme={theme}
+      active={
+        settings.companion === "cat"
+      }
+      onClick={() =>
+        onChange({
+          ...settings,
+          companion: "cat",
+          animationsOn: true,
+        })
+      }
+      style={{
+        padding: "5px 10px",
+        fontSize: 14,
+        minHeight: 28,
+        borderRadius: 10,
+      }}
+    >
+      🐱 Kitty
+    </Chip>
 
-        <div
-          style={{
-            marginTop: 12,
-          }}
-        >
-          <Toggle
-            on={settings.animationsOn}
-            onClick={() =>
-              onChange({
-                ...settings,
-                animationsOn:
-                  !settings.animationsOn,
-              })
-            }
-            style={{
-    fontSize: 11,
-    minHeight: 28,
-  }}
-            theme={theme}
-            label="Animations"
-          />
-        </div>
-      </Panel>
+    <Chip
+      theme={theme}
+      active={
+        settings.companion === "dog"
+      }
+      onClick={() =>
+        onChange({
+          ...settings,
+          companion: "dog",
+          animationsOn: true,
+        })
+      }
+      style={{
+        padding: "5px 10px",
+        fontSize: 14,
+        minHeight: 28,
+        borderRadius: 10,
+      }}
+    >
+      🐶 Puppy
+    </Chip>
+  </div>
+</Panel>
 
 
 
@@ -632,7 +609,7 @@ const [profileOpen, setProfileOpen] = useState(false);
     "--hydration-input-bg":
       theme.isDark
         ? "rgba(255,255,255,0.08)"
-        : "#d1cec5ab",
+        : "#41414000",
 
     "--hydration-border":
       theme.border,
@@ -1116,7 +1093,7 @@ const [profileOpen, setProfileOpen] = useState(false);
                   }}
                   style={{
     padding: "5px 10px",
-    fontSize: 11,
+    fontSize: 11.7,
     minHeight: 28,
     borderRadius: 10,
   }}

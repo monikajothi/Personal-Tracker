@@ -1419,8 +1419,8 @@ useEffect(() => {
             />
           )}
 
-          {tab === "garden" && (
-            <GardenView
+          {tab === "expenses" && (
+            <ExpensesView
               theme={theme}
 
               entries={entries}

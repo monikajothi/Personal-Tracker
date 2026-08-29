@@ -177,7 +177,7 @@ export function FloatingDecor({ animationsOn, themeKey }) {
         inset: 0,
         pointerEvents: "none",
         overflow: "hidden",
-        zIndex: 0,
+        zIndex: -1,
       }}
     >
       {items.map((item, index) => (

@@ -29,6 +29,13 @@ export const GlobalStyle = () => (
     transform: translateY(0) scale(1);
   }
 }
+
+@keyframes mwt-petal-pop {
+  0% { transform: scale(0.4); opacity: 0; }
+  60% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+  
     @keyframes mwt-page-enter {
       0% { opacity: 0; transform: translateY(10px) scale(0.985); }
       100% { opacity: 1; transform: translateY(0) scale(1); }
@@ -166,13 +173,20 @@ body {
   margin-left: auto;
   margin-right: auto;
 
-  /* Make each page fill available vertical space and distribute
-     its internal sections evenly (top → middle → bottom) so pages
-     appear centered and balanced on different screen heights. */
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   height: 100%;
+}
+
+/*
+  Pages with a fixed 2-3 section layout want their sections
+  spread evenly top/middle/bottom. Pages with variable-height
+  content (like Calendar, whose content height changes with
+  what's logged that day) should NOT stretch — opt out with
+  .mwt-no-stretch on the page's root element.
+*/
+.tracker-page > *:not(.mwt-no-stretch) {
+  justify-content: space-between;
 }
 
 /* =========================================================
@@ -389,10 +403,6 @@ body {
   opacity: 0.48;
 }
 
-
-/* =========================================================
-   COMPACT INPUT
-========================================================= */
 
 /* =========================================================
    COMPACT INPUT

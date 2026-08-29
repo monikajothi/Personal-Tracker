@@ -464,13 +464,21 @@ const ChartCard = ({ theme, title, children }) => (
   </Panel>
 );
 
-export default function AnalyticsView({ theme, entries, cycleEnabled, userId }) {
+export default function AnalyticsView({ theme, entries, cycleEnabled, userId, settings }) {
   const [range, setRange] = useState(7);
   const days = useLastNDays(entries, range);
   const enoughData = Object.keys(entries).length >= 2;
   const { user } = useAuth();
   const sleepData = days.map((d) => ({ name: d.label, hours: d.entry.sleep?.duration ?? null }));
-  const waterData = days.map((d) => ({ name: d.label, glasses: d.entry.water?.glasses ?? 0 }));
+  const waterData = days.map((d) => {
+  const glasses = Number(d.entry.water?.glasses ?? 0);
+  const cupMl = Number(settings?.hydration?.cupMl ?? 250);
+
+  return {
+    name: d.label,
+    liters: Number(((glasses * cupMl) / 1000).toFixed(2)),
+  };
+});
   const moodData = days.map((d) => ({ name: d.label, energy: d.entry.mood?.energy ?? null }));
 
   if (!enoughData) {
@@ -511,16 +519,83 @@ export default function AnalyticsView({ theme, entries, cycleEnabled, userId }) 
       </ChartCard>
 
       <ChartCard theme={theme} title="💧 Water intake">
-        <ResponsiveContainer width="100%" height={180}>
-          <BarChart data={waterData}>
-            <CartesianGrid strokeDasharray="3 3" stroke={theme.border} vertical={false} />
-            <XAxis dataKey="name" tick={{ fontSize: 11, fill: theme.ink }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fontSize: 11, fill: theme.ink }} axisLine={false} tickLine={false} width={26} />
-            <Tooltip contentStyle={{ borderRadius: 10, border: `1px solid ${theme.border}`, fontSize: 12 }} />
-            <Bar dataKey="glasses" fill={theme.accent2} radius={[6, 6, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
-      </ChartCard>
+  <ResponsiveContainer width="100%" height={180}>
+    <AreaChart data={waterData}>
+      <defs>
+        <linearGradient
+          id="waterGrad"
+          x1="0"
+          y1="0"
+          x2="0"
+          y2="1"
+        >
+          <stop
+            offset="0%"
+            stopColor={theme.accent2}
+            stopOpacity={0.38}
+          />
+          <stop
+            offset="100%"
+            stopColor={theme.accent2}
+            stopOpacity={0.04}
+          />
+        </linearGradient>
+      </defs>
+
+      <CartesianGrid
+        strokeDasharray="3 3"
+        stroke={theme.border}
+        vertical={false}
+      />
+
+      <XAxis
+        dataKey="name"
+        tick={{
+          fontSize: 11,
+          fill: theme.ink,
+        }}
+        axisLine={false}
+        tickLine={false}
+      />
+
+      <YAxis
+        tick={{
+          fontSize: 11,
+          fill: theme.ink,
+        }}
+        axisLine={false}
+        tickLine={false}
+        width={32}
+        tickFormatter={(value) => `${value}L`}
+      />
+
+      <Tooltip
+        contentStyle={{
+          borderRadius: 10,
+          border: `1px solid ${theme.border}`,
+          fontSize: 12,
+        }}
+        formatter={(value) => [
+          `${Number(value).toFixed(2)} L`,
+          "Water",
+        ]}
+      />
+
+      <Area
+        type="monotone"
+        dataKey="liters"
+        stroke={theme.accent2}
+        fill="url(#waterGrad)"
+        strokeWidth={2.5}
+        connectNulls
+        dot={{
+          r: 3,
+          fill: theme.accent2,
+        }}
+      />
+    </AreaChart>
+  </ResponsiveContainer>
+</ChartCard>
 
       <ChartCard theme={theme} title="⚡ Energy trend">
         <ResponsiveContainer width="100%" height={180}>

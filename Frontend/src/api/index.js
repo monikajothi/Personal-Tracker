@@ -3,6 +3,8 @@ import { api, BASE_URL, getToken } from "./client.js";
 export const authApi = {
   signup: (name, email, password, gender) => api.post("/auth/signup", { name, email, password, gender }, { auth: false }),
   login: (email, password) => api.post("/auth/login", { email, password }, { auth: false }),
+  forgotPassword: (email) => api.post("/auth/forgot-password", { email }, { auth: false }),
+  resetPassword: (token, password) => api.post("/auth/reset-password", { token, password }, { auth: false }),
 };
 
 export const entriesApi = {

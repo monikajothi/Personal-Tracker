@@ -16,6 +16,15 @@ async function request(path, { method = "GET", body, auth = true } = {}) {
     if (token) headers.Authorization = `Bearer ${token}`;
   }
 
+  async function del(path) {
+  const res = await fetch(`${BASE_URL}${path}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error(`DELETE ${path} failed: ${res.status}`);
+  return res.json();
+}
+
   const res = await fetch(`${BASE_URL}${path}`, {
     method,
     headers,
@@ -38,4 +47,5 @@ export const api = {
   get: (path) => request(path),
   put: (path, body) => request(path, { method: "PUT", body }),
   post: (path, body, opts = {}) => request(path, { method: "POST", body, ...opts }),
+  del: (path) => request(path, { method: "DELETE" }),
 };

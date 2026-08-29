@@ -206,7 +206,7 @@ const NAV = [
   { id: "calendar", label: "Calendar", emoji: "🗓️" },
   { id: "insights", label: "Insights", emoji: "📊" },
   { id: "journal", label: "Journal", emoji: "📝" },
-  { id: "garden", label: "Garden", emoji: "🌿" },
+  { id: "expenses", label: "Expenses", emoji: "💰" },
   { id: "settings", label: "Settings", emoji: "⚙️" },
 ];
 

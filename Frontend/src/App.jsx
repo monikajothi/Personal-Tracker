@@ -20,6 +20,7 @@ import CategoryModal from "./components/CategoryModal.jsx";
 import DayDetailModal from "./components/DayDetailModal.jsx";
 import MicroCelebration from "./components/MicroCelebration.jsx";
 
+
 import SharedJarPage from "./pages/SharedJarPage.jsx";
 
 import {
@@ -87,9 +88,9 @@ const JournalView =
     import("./pages/JournalPage.jsx")
   );
 
-const GardenView =
+const ExpensesView =
   lazy(() =>
-    import("./pages/GardenPage.jsx")
+    import("./pages/ExpensesPage.jsx")
   );
 
 const SettingsView =
@@ -1480,18 +1481,37 @@ useEffect(() => {
     theme={theme}
     category={activeCategory}
     dayEntry={dayEntry}
+
+    /*
+     * IMPORTANT:
+     * WaterForm / HydrationWaterCard needs
+     * the COMPLETE settings object.
+     *
+     * This was missing.
+     */
+    settings={settings}
+
     onClose={closeModal}
-    onSave={saveCategoryWithCelebration}
-    waterTarget={settings.waterTarget || 8}
+
+    onSave={
+      saveCategoryWithCelebration
+    }
+
+    waterTarget={
+      settings.waterTarget || 8
+    }
+
     onWaterTarget={(value) =>
       saveSettings({
         ...settings,
         waterTarget: value,
       })
     }
+
     hydrationTargetMl={
       settings.hydration?.targetMl
     }
+
     getHistory={() =>
       getHistory(editingDay)
     }

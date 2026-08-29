@@ -245,3 +245,13 @@ export function isCategoryDone(catId, entry) {
   }
 }
 
+export const EXPENSE_CATEGORIES = [
+  { v: "Food", emoji: "🍔" },
+  { v: "Transport", emoji: "🚗" },
+  { v: "Shopping", emoji: "🛍️" },
+  { v: "Bills", emoji: "🧾" },
+  { v: "Health", emoji: "💊" },
+  { v: "Entertainment", emoji: "🎬" },
+  { v: "Other", emoji: "✨" },
+];
+

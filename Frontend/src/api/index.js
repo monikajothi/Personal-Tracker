@@ -82,3 +82,11 @@ export const starsApi = {
   shareLink: () =>
     api.get("/stars/share-link/current"),
 };
+
+export const transactionsApi = {
+  range: (start, end) => api.get(`/api/transactions?start=${start}&end=${end}`),
+  summary: (start, end) => api.get(`/api/transactions/summary?start=${start}&end=${end}`),
+  create: (data) => api.post("/api/transactions", data),
+  update: (id, data) => api.put(`/api/transactions/${id}`, data),
+  remove: (id) => api.del(`/api/transactions/${id}`),
+};

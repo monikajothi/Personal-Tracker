@@ -5,6 +5,7 @@ import { DEFAULT_CATEGORIES, todayStr, addDays, fmtNiceDate, isCategoryDone } fr
 import { useAuth } from "../hooks/useAuth.jsx";
 import { getHydrationTargetMl, glassesToMl } from "../utils/hydration.js";
 import HydrationWaterCard from "../components/HydrationWaterCard.jsx";
+import NotesPanel from "../components/NotesPanel.jsx";
 
 // Streak counts consecutive tracked days, but forgives one missed day per
 // every 7 tracked days (a "streak freeze") so one bad day doesn't erase
@@ -133,6 +134,8 @@ export default function Dashboard({ theme, entries, settings, onOpenCategory, on
           );
         })}
       </div>
+
+      <NotesPanel theme={theme} />
 
       <SectionTitle theme={theme}>📊 This week</SectionTitle>
       <WeekStrip theme={theme} entries={entries} essentials={essentials} />

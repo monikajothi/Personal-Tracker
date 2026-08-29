@@ -16,7 +16,7 @@ const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
   "https://personal-tracker-ri3o.onrender.com",
-  "https://personal-tracker-two-pi.vercel.app/",
+  "https://personal-tracker-two-pi.vercel.app",
   "https://localhost",
   "http://10.119.198.108:5173",
   "capacitor://localhost",

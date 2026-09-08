@@ -36,19 +36,36 @@ The same application can therefore be delivered across:
 ## 🔗 Live Demo & Deployment
 
 ### 🌐 Web Application
-
-**Live Demo:**  
-https://personal-tracker-two-pi.vercel.app/
+[personal-tracker-two-pi.vercel.app](https://personal-tracker-two-pi.vercel.app/)
 
 ### 📱 Android Application
+:** Automated via [GitHub Actions Workflow](https://github.com/monikajothi/Personal-Tracker/actions)
 
-The React application is packaged into a native Android application using **Capacitor**.
+---
 
-### ⚙️ CI/CD
+## 📸 Application Screenshots
 
-Android builds are automated through GitHub Actions:
+<p align="center">
+    <img src="Application%20Screenshots/Screenshot_2026_0908_195504.jpg" width="30%" alt="App Screenshot 5" />
+ 
+  <img src="Application%20Screenshots/Screenshot_20260908_195518.jpg" width="30%" alt="App Screenshot 2" />
+  <img src="Application%20Screenshots/Screenshot_20260908_195604.jpg" width="30%" alt="App Screenshot 3" />
+</p>
 
-https://github.com/monikajothi/Personal-Tracker/actions
+<p align="center">
+     <img src="Application%20Screenshots/Screenshot_20260908_195417.jpg" width="30%" alt="App Screenshot 1" />
+    
+  <img src="Application%20Screenshots/Screenshot_20260908_195647.jpg" width="30%" alt="App Screenshot 4" />
+  
+  
+</p>
+
+<p align="center">
+
+ <img src="Application%20Screenshots/Screenshot_2026_0908_195618.jpg" width="30%" alt="App Screenshot 7" /> 
+<img src="Application%20Screenshots/Screenshot_2026_0908_195641.jpg" width="30%" alt="App Screenshot 8" />
+  <img src="Application%20Screenshots/Screenshot_2026_0908_195556.jpg" width="30%" alt="App Screenshot 6" />
+</p>
 
 ---
 

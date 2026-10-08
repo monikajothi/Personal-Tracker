@@ -5,6 +5,7 @@ import {
   getHydrationGlassMl,
   getHydrationTargetMl,
 } from "../utils/hydration.js";
+import { resolveHydrationRepeatMin } from "../utils/hydrationReminderSchedule.js";
 
 
 /* =========================================================
@@ -827,7 +828,9 @@ export function useHydrationReminders({
 
 
         const repeatMin =
-          h.repeatEveryMin;
+          resolveHydrationRepeatMin(
+            h
+          );
 
 
         const notifications =
@@ -836,10 +839,14 @@ export function useHydrationReminders({
 
         /* ================================================
            REPEATING MODE
+
+           When a notification is swiped away, Android
+           removes that single item from the queue. Keep a
+           short chain of future reminders so the app does
+           not silently stop until it is reopened.
         ================================================ */
 
         if (
-          repeatMin &&
           repeatMin > 0
         ) {
           const nowTime =

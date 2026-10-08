@@ -17,6 +17,9 @@ const QUICK_LOG_KEY = "hydrationQuickLogs";
 const HYDRATION_OPEN_KEY =
   "hydrationOpenWater";
 
+const HYDRATION_REMINDER_ID = 2000;
+const HYDRATION_SNOOZE_ID = 3000;
+
 
 /* =========================================================
    TIME HELPERS
@@ -47,6 +50,51 @@ function minutesBetween(a, b) {
     0,
     Math.round((b - a) / 60000)
   );
+}
+
+
+function buildNextReminderAt(h, remainingMl, cupMl, now = new Date()) {
+  if (!h || remainingMl <= 0) {
+    return null;
+  }
+
+  const targetGlasses = Math.max(
+    1,
+    Math.ceil(remainingMl / Math.max(cupMl || 1, 1))
+  );
+
+  const windowStart = parseTimeToday(h.startTime || "08:00");
+  let windowEnd = parseTimeToday(h.endTime || "20:00");
+
+  if (windowEnd <= windowStart) {
+    windowEnd.setDate(windowEnd.getDate() + 1);
+  }
+
+  if (now > windowEnd) {
+    windowStart.setDate(windowStart.getDate() + 1);
+    windowEnd.setDate(windowEnd.getDate() + 1);
+  }
+
+  const totalWindowMs = windowEnd.getTime() - windowStart.getTime();
+
+  if (!(totalWindowMs > 0)) {
+    return null;
+  }
+
+  const slots = [];
+
+  for (let i = 1; i <= targetGlasses; i += 1) {
+    const candidate = new Date(
+      windowStart.getTime() +
+        (totalWindowMs * i) / (targetGlasses + 1)
+    );
+
+    if (candidate.getTime() > now.getTime()) {
+      slots.push(candidate);
+    }
+  }
+
+  return slots[0] || null;
 }
 
 
@@ -236,11 +284,12 @@ async function cancelHydrationNotifications() {
         []
       ).filter(
         (n) =>
+          n.id === HYDRATION_REMINDER_ID ||
+          n.id === HYDRATION_SNOOZE_ID ||
           (
             n.id >= 2000 &&
             n.id < 3000
-          ) ||
-          n.id === 3000
+          )
       );
 
     if (mine.length) {
@@ -480,10 +529,14 @@ export function useHydrationReminders({
                   30;
 
 
+                LocalNotifications.cancel({
+                  notifications: [{ id: HYDRATION_SNOOZE_ID }],
+                }).catch(() => {});
+
                 LocalNotifications.schedule({
                   notifications: [
                     {
-                      id: 3000,
+                      id: HYDRATION_SNOOZE_ID,
 
                       title:
                         "💧 Hydration reminder",
@@ -511,6 +564,7 @@ export function useHydrationReminders({
 
                       smallIcon:
                         "ic_stat_notify",
+                      sound: "default",
                     },
                   ],
                 }).catch(
@@ -620,105 +674,20 @@ export function useHydrationReminders({
       const now =
         new Date();
 
+      const nextReminderAt = buildNextReminderAt(
+        h,
+        remainingMl,
+        cup,
+        now
+      );
 
-      let windowEnd =
-        parseTimeToday(
-          h.endTime ||
-            "20:00"
-        );
-
-
-      let windowStart =
-        parseTimeToday(
-          h.startTime ||
-            "08:00"
-        );
-
-
-      if (
-        windowEnd <=
-        windowStart
-      ) {
-        windowEnd.setDate(
-          windowEnd.getDate() +
-            1
-        );
-      }
-
-
-      if (
-        now < windowStart
-      ) {
-        await scheduleAtMinutes(
-          minutesBetween(
-            now,
-            windowStart
-          ),
-          cup,
-          remainingMl,
-          h,
-          target
-        );
-
-        return;
-      }
-
-
-      if (
-        now > windowEnd
-      ) {
-        windowStart.setDate(
-          windowStart.getDate() +
-            1
-        );
-
-        await scheduleAtMinutes(
-          minutesBetween(
-            now,
-            windowStart
-          ),
-          cup,
-          remainingMl,
-          h,
-          target
-        );
-
-        return;
-      }
-
-
-      const remainingMinutes =
-        minutesBetween(
-          now,
-          windowEnd
-        );
-
-
-      const intervalMin =
-        computeIntervalMin(
-          remainingMl,
-          cup,
-          remainingMinutes ||
-            1,
-
-          h.minIntervalMin ||
-            30,
-
-          h.maxIntervalMin ||
-            180
-        );
-
-
-      if (
-        intervalMin == null
-      ) {
+      if (!nextReminderAt) {
         await cancelHydrationNotifications();
         return;
       }
 
-
       await scheduleAtMinutes(
-        intervalMin,
+        minutesBetween(now, nextReminderAt),
         cup,
         remainingMl,
         h,
@@ -827,94 +796,9 @@ export function useHydrationReminders({
         }
 
 
-        const repeatMin =
-          resolveHydrationRepeatMin(
-            h
-          );
-
-
-        const notifications =
-          [];
-
-
-        /* ================================================
-           REPEATING MODE
-
-           When a notification is swiped away, Android
-           removes that single item from the queue. Keep a
-           short chain of future reminders so the app does
-           not silently stop until it is reopened.
-        ================================================ */
-
-        if (
-          repeatMin > 0
-        ) {
-          const nowTime =
-            Date.now();
-
-          const step =
-            repeatMin *
-            60_000;
-
-
-          for (
-            let offset =
-              Math.max(
-                minsFromNow,
-                1
-              ) *
-              60_000,
-              i = 0;
-
-            offset <
-              24 *
-                60 *
-                60_000 &&
-            i < 24;
-
-            offset += step,
-            i++
-          ) {
-            notifications.push({
-              id:
-                2000 + i,
-
-              title:
-                "💧 Hydration reminder",
-
-              body:
-                `${getReminderBody()} — ${remainingLiters} L remaining`,
-
-              schedule: {
-                at:
-                  new Date(
-                    nowTime +
-                      offset
-                  ),
-
-                allowWhileIdle:
-                  true,
-              },
-
-              actionTypeId:
-                "WATER_ACTIONS",
-
-              channelId:
-                "hydration",
-
-              smallIcon:
-                "ic_stat_notify",
-            });
-          }
-
-        } else {
-
-          /* ==============================================
-             SINGLE ADAPTIVE REMINDER
-          ============================================== */
-
-          notifications.push({
-            id: 2000,
+        const notifications = [
+          {
+            id: HYDRATION_REMINDER_ID,
 
             title:
               "💧 Hydration reminder",
@@ -937,9 +821,9 @@ export function useHydrationReminders({
 
             smallIcon:
               "ic_stat_notify",
-          });
-        }
-
+            sound: "default",
+          },
+        ];
 
         await LocalNotifications.schedule({
           notifications,
@@ -962,9 +846,15 @@ export function useHydrationReminders({
 
     scheduleNext();
 
+    const intervalId = setInterval(() => {
+      if (!cancelled) {
+        scheduleNext();
+      }
+    }, 60_000);
 
     return () => {
       cancelled = true;
+      clearInterval(intervalId);
     };
 
   }, [

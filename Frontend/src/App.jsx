@@ -15,6 +15,8 @@ import {
 } from "./components/nav-and-companion.jsx";
 
 import { App as CapacitorApp } from "@capacitor/app";
+import { Capacitor } from "@capacitor/core";
+import { LocalNotifications } from "@capacitor/local-notifications";
 
 import CategoryModal from "./components/CategoryModal.jsx";
 import DayDetailModal from "./components/DayDetailModal.jsx";
@@ -58,6 +60,127 @@ const QUICK_LOG_KEY =
 const HYDRATION_OPEN_KEY =
   "hydrationOpenWater";
 
+const INSIGHT_REMINDER_KEY = "mwt-insight-reminders";
+const SUNDAY_RECAP_KEY = "mwt-sunday-recap";
+
+function shuffle(list) {
+  const items = [...list];
+  for (let i = items.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [items[i], items[j]] = [items[j], items[i]];
+  }
+  return items;
+}
+
+function buildInsightCandidates(entries) {
+  const rows = Object.entries(entries || {})
+    .filter(([, value]) => value && typeof value === "object")
+    .map(([date, value]) => ({ date, ...value }));
+
+  if (rows.length < 7) return [];
+
+  const candidates = [];
+
+  const walkDays = rows.filter((entry) => Number(entry.movement?.minutes || 0) >= 20);
+  const nonWalkDays = rows.filter((entry) => Number(entry.movement?.minutes || 0) < 20);
+
+  if (walkDays.length && nonWalkDays.length) {
+    const avgWalkSleep = walkDays
+      .map((entry) => Number(entry.sleep?.duration || 0))
+      .filter((v) => Number.isFinite(v) && v > 0);
+    const avgNonWalkSleep = nonWalkDays
+      .map((entry) => Number(entry.sleep?.duration || 0))
+      .filter((v) => Number.isFinite(v) && v > 0);
+
+    if (avgWalkSleep.length && avgNonWalkSleep.length) {
+      const diff = avgWalkSleep.reduce((sum, v) => sum + v, 0) / avgWalkSleep.length - avgNonWalkSleep.reduce((sum, v) => sum + v, 0) / avgNonWalkSleep.length;
+      if (diff > 0.4) {
+        candidates.push(`You sleep ${diff.toFixed(1)}h longer on days you walk 20+ min.`);
+      }
+    }
+  }
+
+  const hydratedDays = rows.filter((entry) => Number(entry.water?.glasses || 0) >= 6);
+  const dehydratedDays = rows.filter((entry) => Number(entry.water?.glasses || 0) < 6);
+
+  if (hydratedDays.length && dehydratedDays.length) {
+    const moodHydrated = hydratedDays
+      .map((entry) => Number(entry.mood?.energy || 0))
+      .filter((v) => Number.isFinite(v) && v > 0);
+    const moodDry = dehydratedDays
+      .map((entry) => Number(entry.mood?.energy || 0))
+      .filter((v) => Number.isFinite(v) && v > 0);
+
+    if (moodHydrated.length && moodDry.length) {
+      const avgHydrated = moodHydrated.reduce((sum, v) => sum + v, 0) / moodHydrated.length;
+      const avgDry = moodDry.reduce((sum, v) => sum + v, 0) / moodDry.length;
+      if (avgHydrated > avgDry + 0.2) {
+        candidates.push(`Your energy is ${Math.max(0.1, avgHydrated - avgDry).toFixed(1)} points higher on hydrated days.`);
+      }
+    }
+  }
+
+  const sleeps = rows
+    .map((entry) => Number(entry.sleep?.duration || 0))
+    .filter((v) => Number.isFinite(v) && v > 0);
+
+  if (sleeps.length) {
+    const avgSleep = sleeps.reduce((sum, v) => sum + v, 0) / sleeps.length;
+    if (avgSleep >= 7.5) {
+      candidates.push(`Your average sleep is ${avgSleep.toFixed(1)}h — that is likely helping your energy stay steadier.`);
+    }
+  }
+
+  return Array.from(new Set(candidates)).slice(0, 4);
+}
+
+function dispatchInsightNotification(title, body, id) {
+  if (Capacitor.isNativePlatform()) {
+    LocalNotifications.requestPermissions().then(() => {
+      LocalNotifications.schedule({
+        notifications: [{
+          id,
+          title,
+          body,
+          channelId: "hydration",
+          smallIcon: "ic_stat_notify",
+          sound: "default",
+          schedule: { at: new Date(Date.now() + 1000), allowWhileIdle: true },
+        }],
+      }).catch(() => {});
+    }).catch(() => {});
+    return;
+  }
+
+  if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+    new Notification(title, { body, tag: `insight-${id}` });
+  }
+}
+
+function dispatchSundayRecapNotification() {
+  const message = "Your week in 20 seconds: small habits are adding up.";
+
+  if (Capacitor.isNativePlatform()) {
+    LocalNotifications.requestPermissions().then(() => {
+      LocalNotifications.schedule({
+        notifications: [{
+          id: 5001,
+          title: "Sunday recap",
+          body: message,
+          channelId: "hydration",
+          smallIcon: "ic_stat_notify",
+          sound: "default",
+          schedule: { at: new Date(Date.now() + 1000), allowWhileIdle: true },
+        }],
+      }).catch(() => {});
+    }).catch(() => {});
+    return;
+  }
+
+  if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+    new Notification("Sunday recap", { body: message, tag: "sunday-recap" });
+  }
+}
 
 /* =========================================================
    LAZY LOAD PAGES
@@ -986,6 +1109,41 @@ function TrackerApp() {
       logWaterGlasses,
   });
 
+  useEffect(() => {
+    if (!userId || !settings?.hydration?.enabled) return;
+
+    const todayKey = todayStr();
+    const state = JSON.parse(localStorage.getItem(INSIGHT_REMINDER_KEY) || "{}") || {};
+    if (state.date === todayKey) return;
+
+    const insights = buildInsightCandidates(entries);
+    if (!insights.length) return;
+
+    const picks = shuffle(insights).slice(0, 2);
+
+    picks.forEach((text, index) => {
+      dispatchInsightNotification("Insight unlocked", text, 4000 + index);
+    });
+
+    localStorage.setItem(INSIGHT_REMINDER_KEY, JSON.stringify({ date: todayKey, insights: picks }));
+  }, [entries, settings, userId]);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const today = new Date();
+    const todayKey = todayStr();
+    const sundayState = JSON.parse(localStorage.getItem(SUNDAY_RECAP_KEY) || "{}") || {};
+
+    if (today.getDay() !== 0 || sundayState.date === todayKey) return;
+
+    const stories = buildInsightCandidates(entries);
+    if (!stories.length) return;
+
+    dispatchSundayRecapNotification();
+    localStorage.setItem(SUNDAY_RECAP_KEY, JSON.stringify({ date: todayKey }));
+  }, [entries, userId]);
+
 
   /* =======================================================
      CATEGORY ACTIONS
@@ -1279,7 +1437,9 @@ useEffect(() => {
           "100%",
 
         background:
-          theme.bg,
+          `radial-gradient(circle at top left, rgba(147, 197, 253, 0.16), transparent 26%),
+           radial-gradient(circle at bottom right, rgba(191, 156, 255, 0.12), transparent 24%),
+           ${theme.bg || "#fffafc"}`,
 
         color:
           theme.ink,

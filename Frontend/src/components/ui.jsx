@@ -1,4 +1,26 @@
 import React from "react";
+import { ClockIcon } from "@phosphor-icons/react";
+
+export const LabelBadge = ({ icon: Icon, color = "#7C8EF8", children }) => (
+  <span style={{ display: "inline-flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}>
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: 18,
+        height: 18,
+        borderRadius: 6,
+        background: `${color}22`,
+        color,
+        lineHeight: 1,
+      }}
+    >
+      <Icon size={12} weight="duotone" />
+    </span>
+    <span>{children}</span>
+  </span>
+);
 
 export const Chip = ({ active, onClick, children, theme, style }) => (
   <button
@@ -188,11 +210,9 @@ export const TimeInput = ({ value, onChange, theme, placeholder = "Choose time",
 
         background: `${theme.accent}12`,
         color: theme.accent,
-
-        fontSize: 17,
       }}
     >
-      🕒
+      <ClockIcon size={16} weight="duotone" />
     </div>
 
     {/* TEXT */}

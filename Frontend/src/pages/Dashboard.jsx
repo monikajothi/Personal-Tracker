@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { ArrowRightIcon, CalendarBlankIcon, CheckCircleIcon, FlameIcon, HeartIcon, MoonIcon, SparkleIcon, SunHorizonIcon } from "@phosphor-icons/react";
 import { Panel, SectionTitle } from "../components/ui.jsx";
 import MonthWrapModal from "../components/MonthWrapModal.jsx";
 import { DEFAULT_CATEGORIES, todayStr, addDays, fmtNiceDate, isCategoryDone } from "../constants.js";
@@ -64,14 +65,14 @@ export default function Dashboard({ theme, entries, settings, onOpenCategory, on
 
   const greeting =
     hour < 5
-      ? `Still up, ${name}? 🌙`
+      ? `Still up, ${name}?`
       : hour < 12
-      ? `Good morning, ${name} 🌤️`
+      ? `Good morning, ${name}`
       : hour < 17
-      ? `Good afternoon, ${name} ☀️`
+      ? `Good afternoon, ${name}`
       : hour < 21
-      ? `Good evening, ${name} 🌆`
-      : `Winding down, ${name}? 🌙`;
+      ? `Good evening, ${name}`
+      : `Winding down, ${name}?`;
   return (
     <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", height: "100%" }}>
       <div style={{ marginBottom: 18 }}>
@@ -80,8 +81,8 @@ export default function Dashboard({ theme, entries, settings, onOpenCategory, on
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
-        <StatCard theme={theme} emoji="🔥" value={streak} label="day streak" />
-        <StatCard theme={theme} emoji="💗" value={`${pct}%`} label="today's check-in" />
+        <StatCard theme={theme} icon={FlameIcon} value={streak} label="day streak" />
+        <StatCard theme={theme} icon={HeartIcon} value={`${pct}%`} label="today's check-in" />
       </div>
 
       {/* Hydration progress */}
@@ -90,46 +91,58 @@ export default function Dashboard({ theme, entries, settings, onOpenCategory, on
       </div>
 
       {pct === 100 && essentials.length > 0 && (
-        <Panel theme={theme} style={{ textAlign: "center", marginBottom: 16, background: theme.soft, border: "none" }}>
-          <div className={animationsOn ? "mwt-pop" : ""} style={{ fontSize: 15, fontWeight: 800, color: theme.ink }}>
-            🎉 Today's little check-in is complete! 🌷✨<br />
-            <span style={{ fontWeight: 600, fontSize: 13, opacity: 0.75 }}>See you tomorrow 🐾💗</span>
+        <Panel theme={theme} style={{ textAlign: "center", marginBottom: 16, background: `${theme.accent}14`, border: "none" }}>
+          <div className={animationsOn ? "mwt-pop" : ""} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, fontSize: 15, fontWeight: 800, color: theme.ink }}>
+            <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "6px 12px", borderRadius: 999, background: `${theme.accent}22`, color: theme.accent }}>
+              <CheckCircleIcon size={16} weight="duotone" />
+              <span>Today's little check-in is complete</span>
+            </div>
+            <span style={{ fontWeight: 600, fontSize: 13, opacity: 0.75, display: "inline-flex", alignItems: "center", gap: 6 }}>
+              <SparkleIcon size={13} weight="duotone" />
+              See you tomorrow
+            </span>
           </div>
         </Panel>
       )}
 
-      <SectionTitle theme={theme} sub="Swipe →">🌷 Today's Check-In</SectionTitle>
+      <SectionTitle theme={theme} sub="Swipe →">Today's Check-In</SectionTitle>
       <div className="mwt-scroll" style={{
         display: "flex", gap: 10, overflowX: "auto", scrollSnapType: "x mandatory",
         paddingBottom: 10, marginBottom: 10, marginInline: -16, paddingInline: 16,
       }}>
         {cats.map((c) => {
           const done = isCategoryDone(c.id, todayEntry[c.id]);
+          const iconColor = c.color || theme.accent;
           return (
             <button key={c.id} onClick={() => onOpenCategory(c)} className="mwt-card" style={{
               textAlign: "left", padding: 16, borderRadius: 20, cursor: "pointer",
-              border: `1.5px solid ${done ? theme.accent : theme.border}`,
-              background: done ? theme.soft : theme.paper, position: "relative",
+              border: `1.5px solid ${done ? iconColor : theme.border}`,
+              background: done ? `${iconColor}20` : theme.paper, position: "relative",
               flex: "0 0 128px", minWidth: 128, scrollSnapAlign: "start",
             }}>
-              <div style={{ fontSize: 26 }}>{c.emoji}</div>
+              <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 32, height: 32, borderRadius: 10, background: `${iconColor}22`, color: iconColor }}>
+                {c.icon ? React.createElement(c.icon, { size: 20, weight: "duotone", color: iconColor }) : c.emoji}
+              </div>
               <div style={{ fontWeight: 800, fontSize: 13.5, color: theme.ink, marginTop: 8 }}>{c.label}</div>
-              {done && <div style={{ position: "absolute", top: 10, right: 12, fontSize: 12, color: theme.accent, fontWeight: 800 }}>✓</div>}
+              {done && <div style={{ position: "absolute", top: 10, right: 12, fontSize: 12, color: iconColor, fontWeight: 800 }}>✓</div>}
             </button>
           );
         })}
         {settings.customHabits.map((h) => {
           const done = !!todayEntry.habits?.[h.id];
+          const iconColor = h.color || theme.accent;
           return (
             <button key={h.id} onClick={() => onOpenHabit(h)} className="mwt-card" style={{
               textAlign: "left", padding: 16, borderRadius: 20, cursor: "pointer",
-              border: `1.5px solid ${done ? theme.accent : theme.border}`,
-              background: done ? theme.soft : theme.paper, position: "relative",
+              border: `1.5px solid ${done ? iconColor : theme.border}`,
+              background: done ? `${iconColor}20` : theme.paper, position: "relative",
               flex: "0 0 128px", minWidth: 128, scrollSnapAlign: "start",
             }}>
-              <div style={{ fontSize: 26 }}>{h.emoji}</div>
+              <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 32, height: 32, borderRadius: 10, background: `${iconColor}22`, color: iconColor }}>
+                {h.icon ? React.createElement(h.icon, { size: 20, weight: "duotone", color: iconColor }) : h.emoji}
+              </div>
               <div style={{ fontWeight: 800, fontSize: 13.5, color: theme.ink, marginTop: 8 }}>{h.name}</div>
-              {done && <div style={{ position: "absolute", top: 10, right: 12, fontSize: 12, color: theme.accent, fontWeight: 800 }}>✓</div>}
+              {done && <div style={{ position: "absolute", top: 10, right: 12, fontSize: 12, color: iconColor, fontWeight: 800 }}>✓</div>}
             </button>
           );
         })}
@@ -137,7 +150,12 @@ export default function Dashboard({ theme, entries, settings, onOpenCategory, on
 
       <NotesPanel theme={theme} />
 
-      <SectionTitle theme={theme}>📊 This week</SectionTitle>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+        <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 28, height: 28, borderRadius: 9, background: `${theme.accent}22`, color: theme.accent }}>
+          <CalendarBlankIcon size={15} weight="duotone" />
+        </span>
+        <h2 className="font-display" style={{ fontSize: 24, fontWeight: 600, color: theme.ink, margin: 0 }}>This week</h2>
+      </div>
       <WeekStrip theme={theme} entries={entries} essentials={essentials} />
 
       <button onClick={() => setWrapOpen(true)} className="mwt-card" style={{
@@ -146,8 +164,11 @@ export default function Dashboard({ theme, entries, settings, onOpenCategory, on
         color: "#fff", fontWeight: 800, fontSize: 14, textAlign: "left",
         display: "flex", alignItems: "center", justifyContent: "space-between",
       }}>
-        <span>✨ See my Month Wrap</span>
-        <span style={{ opacity: 0.8 }}>→</span>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+          <SparkleIcon size={15} weight="duotone" />
+          See my Month Wrap
+        </span>
+        <ArrowRightIcon size={16} weight="duotone" style={{ opacity: 0.9 }} />
       </button>
 
       {wrapOpen && <MonthWrapModal theme={theme} entries={entries} onClose={() => setWrapOpen(false)} />}
@@ -155,9 +176,11 @@ export default function Dashboard({ theme, entries, settings, onOpenCategory, on
   );
 }
 
-const StatCard = ({ theme, emoji, value, label }) => (
+const StatCard = ({ theme, icon: Icon, value, label }) => (
   <Panel theme={theme} style={{ textAlign: "center" }}>
-    <div style={{ fontSize: 26 }}>{emoji}</div>
+    <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", color: theme.accent }}>
+      <Icon size={22} weight="duotone" />
+    </div>
     <div className="font-display" style={{ fontSize: 24, fontWeight: 700, color: theme.ink }}>{value}</div>
     <div style={{ fontSize: 11.5, opacity: 0.6, fontWeight: 700 }}>{label}</div>
   </Panel>

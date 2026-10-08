@@ -83,7 +83,7 @@ export default function MonthWrapModal({ theme, entries, onClose }) {
           )}
           {stats.avgWater && <div style={{ fontSize: 13, opacity: 0.95 }}>Avg water: <b>{stats.avgWater} glasses/day</b></div>}
 
-          <div style={{ fontSize: 22, marginTop: 20, opacity: 0.9 }}>🌷 🌿 ✨</div>
+          {/* <div style={{ fontSize: 22, marginTop: 20, opacity: 0.9 }}>🌷 🌿 ✨</div> */}
         </div>
 
         <div style={{ display: "flex", gap: 10, marginTop: 14 }}>

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { ClockIcon } from "@phosphor-icons/react";
 
 function parseValue(value) {
   if (!value) return { hour24: 9, minute: 0 };
@@ -144,7 +145,9 @@ export default function TimePicker({ theme, value, onChange, placeholder = "Sele
         <span style={{ fontSize: 13.5, fontWeight: 800, opacity: formatted ? 1 : 0.45 }}>
           {formatted || placeholder}
         </span>
-        <span style={{ fontSize: 15, opacity: 0.5 }}>🕑</span>
+        <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 22, height: 22, borderRadius: 7, background: `${theme.accent}18`, color: theme.accent }}>
+          <ClockIcon size={13} weight="duotone" />
+        </span>
       </button>
 
       {open && (

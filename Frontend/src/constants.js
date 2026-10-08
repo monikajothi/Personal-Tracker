@@ -1,31 +1,54 @@
+import {
+  ActivityIcon,
+  AppleLogoIcon,
+  BookOpenTextIcon,
+  CalendarBlankIcon,
+  ChartBarIcon,
+  CheckCircleIcon,
+  CloudSunIcon,
+  DropIcon,
+  FlameIcon,
+  FlowerLotusIcon,
+  ForkKnifeIcon,
+  HeartIcon,
+  LeafIcon,
+  MoonIcon,
+  NotebookIcon,
+  SparkleIcon,
+  StarFourIcon,
+  SunHorizonIcon,
+  WalletIcon,
+  WaveformIcon,
+} from "@phosphor-icons/react";
+
 export const MOODS = [
-  { v: "amazing", e: "🥰", label: "Amazing" },
-  { v: "happy", e: "😊", label: "Happy" },
-  { v: "good", e: "🙂", label: "Good" },
-  { v: "okay", e: "😐", label: "Okay" },
-  { v: "low", e: "😔", label: "Low" },
-  { v: "stressed", e: "😣", label: "Stressed" },
-  { v: "tired", e: "😴", label: "Tired" },
-  { v: "irritated", e: "😡", label: "Irritated" },
+  { v: "amazing", e: "🥰", label: "Amazing", icon: HeartIcon, color: "#F065B9" },
+  { v: "happy", e: "😊", label: "Happy", icon: SparkleIcon, color: "#F4B942" },
+  { v: "good", e: "🙂", label: "Good", icon: CheckCircleIcon, color: "#67C28A" },
+  { v: "okay", e: "😐", label: "Okay", icon: CloudSunIcon, color: "#7EC8FF" },
+  { v: "low", e: "😔", label: "Low", icon: MoonIcon, color: "#8C95B6" },
+  { v: "stressed", e: "😣", label: "Stressed", icon: FlameIcon, color: "#FF7A59" },
+  { v: "tired", e: "😴", label: "Tired", icon: MoonIcon, color: "#8173E8" },
+  { v: "irritated", e: "😡", label: "Irritated", icon: ActivityIcon, color: "#FF6A7A" },
 ];
 
 export const JOURNAL_PROMPTS = [
-  "What made me happy today? 🌸",
-  "What occupied my mind today? 💭",
-  "Something I accomplished ✨",
-  "Something I'm grateful for 🫶",
-  "What would make tomorrow better? 🌱",
+  "What made me happy today?",
+  "What occupied my mind today?",
+  "Something I accomplished",
+  "Something I'm grateful for",
+  "What would make tomorrow better?",
 ];
 
 export const DEFAULT_CATEGORIES = [
-  { id: "sleep", label: "Sleep", emoji: "😴" },
-  { id: "water", label: "Water", emoji: "💧" },
-  { id: "movement", label: "Movement", emoji: "🏃" },
-  { id: "mood", label: "Mood", emoji: "😊" },
-  { id: "cycle", label: "Cycle", emoji: "🩷" },
-  { id: "food", label: "Food", emoji: "🥗" },
-  { id: "selfcare", label: "Self-care", emoji: "🧴" },
-  { id: "learning", label: "Learning", emoji: "📚" },
+  { id: "sleep", label: "Sleep", emoji: "😴", icon: MoonIcon, color: "#7F7AE8" },
+  { id: "water", label: "Water", emoji: "💧", icon: DropIcon, color: "#4AB5FF" },
+  { id: "movement", label: "Movement", emoji: "🏃", icon: ActivityIcon, color: "#FF7B54" },
+  { id: "mood", label: "Mood", emoji: "😊", icon: HeartIcon, color: "#FF7AA2" },
+  { id: "cycle", label: "Cycle", emoji: "🩷", icon: FlowerLotusIcon, color: "#F49AC2" },
+  { id: "food", label: "Food", emoji: "🥗", icon: ForkKnifeIcon, color: "#73C97B" },
+  { id: "selfcare", label: "Self-care", emoji: "🧴", icon: SparkleIcon, color: "#F6B85B" },
+  { id: "learning", label: "Learning", emoji: "📚", icon: BookOpenTextIcon, color: "#9B8CFF" },
 ];
 
 export const COMPANIONS = { cat: ["🐱", "🐶"], dog: ["🐶", "🐱"] };
@@ -215,18 +238,18 @@ export const uid = () => Math.random().toString(36).slice(2, 9);
 
 // Milestone stickers unlocked by total days tracked (cumulative, never resets)
 export const GARDEN_STICKERS = [
-  { days: 3, emoji: "🌱", name: "Sprout" },
-  { days: 7, emoji: "🌷", name: "First Bloom" },
-  { days: 14, emoji: "🦋", name: "Butterfly Visit" },
-  { days: 21, emoji: "🌈", name: "Rainbow Day" },
-  { days: 30, emoji: "🌳", name: "Little Tree" },
-  { days: 45, emoji: "🐝", name: "Busy Bee" },
-  { days: 60, emoji: "🍯", name: "Honey Jar" },
-  { days: 90, emoji: "🌻", name: "Sunflower" },
-  { days: 120, emoji: "🦢", name: "Swan Pond" },
-  { days: 180, emoji: "🎋", name: "Bamboo Grove" },
-  { days: 270, emoji: "🍂", name: "Autumn Keeper" },
-  { days: 365, emoji: "🌸", name: "Full Bloom Year" },
+  { days: 3, emoji: "🌱", name: "Sprout", icon: LeafIcon },
+  { days: 7, emoji: "🌷", name: "First Bloom", icon: FlowerLotusIcon },
+  { days: 14, emoji: "🦋", name: "Butterfly Visit", icon: SparkleIcon },
+  { days: 21, emoji: "🌈", name: "Rainbow Day", icon: SunHorizonIcon },
+  { days: 30, emoji: "🌳", name: "Little Tree", icon: LeafIcon },
+  { days: 45, emoji: "🐝", name: "Busy Bee", icon: ActivityIcon },
+  { days: 60, emoji: "🍯", name: "Honey Jar", icon: WaveformIcon },
+  { days: 90, emoji: "🌻", name: "Sunflower", icon: SunHorizonIcon },
+  { days: 120, emoji: "🦢", name: "Swan Pond", icon: CloudSunIcon },
+  { days: 180, emoji: "🎋", name: "Bamboo Grove", icon: LeafIcon },
+  { days: 270, emoji: "🍂", name: "Autumn Keeper", icon: FlameIcon },
+  { days: 365, emoji: "🌸", name: "Full Bloom Year", icon: FlowerLotusIcon },
 ];
 
 // Used by dashboard/calendar/streak to decide if a category counts as "done"
@@ -246,21 +269,21 @@ export function isCategoryDone(catId, entry) {
 }
 
 export const EXPENSE_CATEGORIES = [
-  { v: "Food", emoji: "🍔" },
-  { v: "Transport", emoji: "🚗" },
-  { v: "Shopping", emoji: "🛍️" },
-  { v: "Bills", emoji: "🧾" },
-  { v: "Health", emoji: "💊" },
-  { v: "Entertainment", emoji: "🎬" },
-  { v: "Other", emoji: "✨" },
+  { v: "Food", emoji: "🍔", icon: AppleLogoIcon },
+  { v: "Transport", emoji: "🚗", icon: CalendarBlankIcon },
+  { v: "Shopping", emoji: "🛍️", icon: WalletIcon },
+  { v: "Bills", emoji: "🧾", icon: WalletIcon },
+  { v: "Health", emoji: "💊", icon: CheckCircleIcon },
+  { v: "Entertainment", emoji: "🎬", icon: ChartBarIcon },
+  { v: "Other", emoji: "✨", icon: SparkleIcon },
 ];
 
 export const INCOME_CATEGORIES = [
-  { v: "Salary", emoji: "💼" },
-  { v: "Freelance", emoji: "🧑‍💻" },
-  { v: "Gift", emoji: "🎁" },
-  { v: "Investment", emoji: "📈" },
-  { v: "Other", emoji: "✨" },
+  { v: "Salary", emoji: "💼", icon: WalletIcon },
+  { v: "Freelance", emoji: "🧑‍💻", icon: NotebookIcon },
+  { v: "Gift", emoji: "🎁", icon: SparkleIcon },
+  { v: "Investment", emoji: "📈", icon: ChartBarIcon },
+  { v: "Other", emoji: "✨", icon: SparkleIcon },
 ];
 
 export const CATEGORY_COLORS = {

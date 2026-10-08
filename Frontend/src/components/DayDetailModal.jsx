@@ -21,29 +21,35 @@ export default function DayDetailModal({ theme, date, entries, settings, onOpenC
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10 }}>
           {cats.map((c) => {
             const done = isCategoryDone(c.id, dayEntry[c.id]);
+            const iconColor = c.color || theme.accent;
             return (
               <button key={c.id} onClick={() => onOpenCategory(c)} className="mwt-card" style={{
                 textAlign: "left", padding: 14, borderRadius: 18, cursor: "pointer",
-                border: `1.5px solid ${done ? theme.accent : theme.border}`,
-                background: done ? theme.soft : theme.bg, position: "relative",
+                border: `1.5px solid ${done ? iconColor : theme.border}`,
+                background: done ? `${iconColor}20` : theme.bg, position: "relative",
               }}>
-                <div style={{ fontSize: 22 }}>{c.emoji}</div>
+                <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 32, height: 32, borderRadius: 10, background: `${iconColor}22`, color: iconColor }}>
+                  {c.icon ? React.createElement(c.icon, { size: 20, weight: "duotone", color: c.color || theme.accent }) : c.emoji}
+                </div>
                 <div style={{ fontWeight: 800, fontSize: 13.5, color: theme.ink, marginTop: 4 }}>{c.label}</div>
-                {done && <div style={{ position: "absolute", top: 10, right: 12, fontSize: 12, color: theme.accent, fontWeight: 800 }}>✓</div>}
+                {done && <div style={{ position: "absolute", top: 10, right: 12, fontSize: 12, color: iconColor, fontWeight: 800 }}>✓</div>}
               </button>
             );
           })}
           {settings.customHabits.map((h) => {
             const done = !!dayEntry.habits?.[h.id];
+            const iconColor = h.color || theme.accent;
             return (
               <button key={h.id} onClick={() => onToggleHabit(h)} className="mwt-card" style={{
                 textAlign: "left", padding: 14, borderRadius: 18, cursor: "pointer",
-                border: `1.5px solid ${done ? theme.accent : theme.border}`,
-                background: done ? theme.soft : theme.bg, position: "relative",
+                border: `1.5px solid ${done ? iconColor : theme.border}`,
+                background: done ? `${iconColor}20` : theme.bg, position: "relative",
               }}>
-                <div style={{ fontSize: 22 }}>{h.emoji}</div>
+                <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 32, height: 32, borderRadius: 10, background: `${iconColor}22`, color: iconColor }}>
+                  {h.icon ? React.createElement(h.icon, { size: 20, weight: "duotone", color: h.color || theme.accent }) : h.emoji}
+                </div>
                 <div style={{ fontWeight: 800, fontSize: 13.5, color: theme.ink, marginTop: 4 }}>{h.name}</div>
-                {done && <div style={{ position: "absolute", top: 10, right: 12, fontSize: 12, color: theme.accent, fontWeight: 800 }}>✓</div>}
+                {done && <div style={{ position: "absolute", top: 10, right: 12, fontSize: 12, color: iconColor, fontWeight: 800 }}>✓</div>}
               </button>
             );
           })}

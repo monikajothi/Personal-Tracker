@@ -227,12 +227,17 @@ export default function CategoryModal({
 
           <span
             style={{
-              fontSize: 26,
-
-              lineHeight: 1,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 36,
+              height: 36,
+              borderRadius: 12,
+              background: `${category.color || theme.accent}22`,
+              color: category.color || theme.accent,
             }}
           >
-            {category.emoji}
+            {category.icon ? React.createElement(category.icon, { size: 22, weight: "duotone", color: category.color || theme.accent }) : category.emoji}
           </span>
 
 

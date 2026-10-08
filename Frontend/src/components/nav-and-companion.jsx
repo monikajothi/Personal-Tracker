@@ -1,10 +1,11 @@
 import React, { useState } from "react";
+import { ChartBarIcon, CalendarBlankIcon, HouseIcon, NotebookIcon, PawPrintIcon, GearSixIcon, WalletIcon } from "@phosphor-icons/react";
 import { buildCompanionMessage } from "../constants.js";
 
 export function Companion({ theme, animationsOn, kind, user, entries, todayComplete, progressPct }) {
   const [msg, setMsg] = useState(null);
   const [closing, setClosing] = useState(false);
-  const emoji = kind === "dog" ? "🐶" : "🐱";
+  const Icon = kind === "dog" ? PawPrintIcon : PawPrintIcon;
 
   const say = () => {
     const next = buildCompanionMessage({ user, entries, todayComplete, progressPct });
@@ -79,7 +80,7 @@ export function Companion({ theme, animationsOn, kind, user, entries, todayCompl
           : ""
       }
     >
-      {emoji}
+      <Icon size={24} weight="duotone" color={theme.accent} />
     </button>
   </div>
 );
@@ -202,12 +203,12 @@ export function FloatingDecor({ animationsOn, themeKey }) {
 }
 
 const NAV = [
-  { id: "home", label: "Home", emoji: "🏠" },
-  { id: "calendar", label: "Calendar", emoji: "🗓️" },
-  { id: "insights", label: "Insights", emoji: "📊" },
-  { id: "journal", label: "Journal", emoji: "📝" },
-  { id: "expenses", label: "Expenses", emoji: "💰" },
-  { id: "settings", label: "Settings", emoji: "⚙️" },
+  { id: "home", label: "Home", icon: HouseIcon },
+  { id: "calendar", label: "Calendar", icon: CalendarBlankIcon },
+  { id: "insights", label: "Insights", icon: ChartBarIcon },
+  { id: "journal", label: "Journal", icon: NotebookIcon },
+  { id: "expenses", label: "Expenses", icon: WalletIcon },
+  { id: "settings", label: "Settings", icon: GearSixIcon },
 ];
 
 export function BottomNav({ theme, tab, setTab }) {
@@ -226,7 +227,7 @@ export function BottomNav({ theme, tab, setTab }) {
             onMouseDown={(e) => e.preventDefault()}
             style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, flex: 1, background: "none", border: "none", cursor: "pointer", padding: "4px 2px", color: tab === n.id ? theme.accent : theme.ink, opacity: tab === n.id ? 1 : 0.55, pointerEvents: "auto", WebkitTapHighlightColor: "transparent" }}
           >
-            <span style={{ fontSize: 19 }}>{n.emoji}</span>
+            <n.icon size={18} weight="duotone" />
             <span style={{ fontSize: 9.5, fontWeight: 800 }}>{n.label}</span>
           </button>
         ))}

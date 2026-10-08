@@ -2,6 +2,7 @@ import React, {
   useEffect,
   useState,
 } from "react";
+import { BellIcon, GearSixIcon, LeafIcon, PaletteIcon, PawPrintIcon } from "@phosphor-icons/react";
 import TimePicker from "../components/TimePicker.jsx";
 import {
   Panel,
@@ -157,6 +158,8 @@ const [profileOpen, setProfileOpen] = useState(false);
           id: uid(),
           name: newHabit.trim(),
           emoji: "🌿",
+          icon: LeafIcon,
+          color: "#6FCF97",
         },
       ],
     });
@@ -205,13 +208,19 @@ const [profileOpen, setProfileOpen] = useState(false);
   {/* Customize title */}
   <div
     style={{
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
       fontSize: 24,
       fontWeight: 800,
       color: theme.ink,
       lineHeight: 1,
     }}
   >
-    ⚙️ Customize
+    <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 30, height: 30, borderRadius: 10, background: `${theme.accent}22`, color: theme.accent }}>
+      <GearSixIcon size={18} weight="duotone" />
+    </span>
+    <span>Customize</span>
   </div>
 
   {/* Profile avatar */}
@@ -372,8 +381,11 @@ const [profileOpen, setProfileOpen] = useState(false);
           marginBottom: 14,
         }}
       >
-        <div className="settings-section-title">
-          🎨 Theme
+        <div className="settings-section-title" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 22, height: 22, borderRadius: 7, background: `${theme.accent}22`, color: theme.accent }}>
+            <PaletteIcon size={14} weight="duotone" />
+          </span>
+          <span>Theme</span>
         </div>
 
         <div className="settings-chip-row">
@@ -435,65 +447,6 @@ const [profileOpen, setProfileOpen] = useState(false);
           COMPANION
       ================================================= */}
 
-      <Panel
-  theme={theme}
-  style={{
-    marginBottom: 14,
-  }}
->
-  <div className="settings-section-title">
-    🐾 Companion
-  </div>
-
-  <div className="settings-chip-row">
-    <Chip
-      theme={theme}
-      active={
-        settings.companion === "cat"
-      }
-      onClick={() =>
-        onChange({
-          ...settings,
-          companion: "cat",
-          animationsOn: true,
-        })
-      }
-      style={{
-        padding: "5px 10px",
-        fontSize: 14,
-        minHeight: 28,
-        borderRadius: 10,
-      }}
-    >
-      🐱 Kitty
-    </Chip>
-
-    <Chip
-      theme={theme}
-      active={
-        settings.companion === "dog"
-      }
-      onClick={() =>
-        onChange({
-          ...settings,
-          companion: "dog",
-          animationsOn: true,
-        })
-      }
-      style={{
-        padding: "5px 10px",
-        fontSize: 14,
-        minHeight: 28,
-        borderRadius: 10,
-      }}
-    >
-      🐶 Puppy
-    </Chip>
-  </div>
-</Panel>
-
-
-
       {/* =================================================
           DAILY REMINDERS
       ================================================= */}
@@ -504,8 +457,11 @@ const [profileOpen, setProfileOpen] = useState(false);
           marginBottom: 14,
         }}
       >
-        <div className="settings-section-title">
-          🔔 Reminders
+        <div className="settings-section-title" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 22, height: 22, borderRadius: 7, background: `${theme.accent}22`, color: theme.accent }}>
+            <BellIcon size={14} weight="duotone" />
+          </span>
+          <span>Reminders</span>
         </div>
 
         <Toggle
@@ -538,24 +494,19 @@ const [profileOpen, setProfileOpen] = useState(false);
             }}
           >
             <TimePicker
-  theme={theme}
-  value={settings.reminders?.time || "20:00"}
-  onChange={(time) =>
-    onChange({
-      ...settings,
-      reminders: {
-        ...settings.reminders,
-        time,
-      },
-    })
-  }
-  placeholder="Set reminder time"
-/>
-{/* 
-            <p className="settings-help">
-              Uses your browser's
-              notification permission.
-            </p> */}
+              theme={theme}
+              value={settings.reminders?.time || "20:00"}
+              onChange={(time) =>
+                onChange({
+                  ...settings,
+                  reminders: {
+                    ...settings.reminders,
+                    time,
+                  },
+                })
+              }
+              placeholder="Set reminder time"
+            />
           </div>
         )}
       </Panel>
@@ -573,9 +524,12 @@ const [profileOpen, setProfileOpen] = useState(false);
     padding: 14,
   }}
 >
-  <div className="settings-section-title">
-         💧 Hydration
-        </div>
+  <div className="settings-section-title" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+    <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 22, height: 22, borderRadius: 7, background: `${theme.accent}22`, color: theme.accent }}>
+      <BellIcon size={14} weight="duotone" />
+    </span>
+    <span>Hydration</span>
+  </div>
 
 
   {/* ENABLE */}
@@ -791,8 +745,8 @@ const [profileOpen, setProfileOpen] = useState(false);
           <div className="hydration-compact-input">
             <input
               type="number"
-              min="5"
-              step="5"
+              min="1"
+              step="1"
               value={
                 hydrationDraft.minIntervalMin
               }
@@ -805,7 +759,7 @@ const [profileOpen, setProfileOpen] = useState(false);
               }
               onBlur={() => {
                 const value = Math.max(
-                  5,
+                  1,
                   Number(
                     hydrationDraft
                       .minIntervalMin
@@ -835,8 +789,8 @@ const [profileOpen, setProfileOpen] = useState(false);
           <div className="hydration-compact-input">
             <input
               type="number"
-              min="5"
-              step="5"
+              min="1"
+              step="1"
               value={
                 hydrationDraft.maxIntervalMin
               }
@@ -849,7 +803,7 @@ const [profileOpen, setProfileOpen] = useState(false);
               }
               onBlur={() => {
                 const minimum = Math.max(
-                  5,
+                  1,
                   Number(
                     hydrationDraft
                       .minIntervalMin
@@ -922,8 +876,8 @@ const [profileOpen, setProfileOpen] = useState(false);
           <div className="hydration-compact-input">
             <input
               type="number"
-              min="5"
-              step="5"
+              min="1"
+              step="1"
               placeholder="Auto"
               value={
                 hydrationDraft.repeatEveryMin ??
@@ -946,7 +900,7 @@ const [profileOpen, setProfileOpen] = useState(false);
                   raw == null
                     ? ""
                     : Math.max(
-                        5,
+                        1,
                         Number(raw)
                       );
 

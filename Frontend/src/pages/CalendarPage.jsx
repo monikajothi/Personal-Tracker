@@ -826,19 +826,13 @@ function FlowerRing({ theme, categories, entry, selected, onSelect }) {
               cx={x}
               cy={y}
               r={20}
-              fill={isSelected ? theme.soft : theme.paper}
-              stroke={theme.border}
+              fill={isSelected ? `${category.color || theme.accent}22` : theme.paper}
+              stroke={category.color || theme.accent}
               strokeWidth={isSelected ? 2 : 1}
             />
-            <text
-              x={x}
-              y={y}
-              textAnchor="middle"
-              dominantBaseline="central"
-              fontSize={17}
-            >
-              {category.emoji}
-            </text>
+            <g transform={`translate(${x}, ${y})`}>
+              {category.icon ? React.createElement(category.icon, { size: 17, weight: "duotone", x: -8.5, y: -8.5, color: category.color || theme.accent }) : null}
+            </g>
           </g>
         );
       })}

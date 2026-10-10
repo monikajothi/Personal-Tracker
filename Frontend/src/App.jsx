@@ -95,7 +95,7 @@ function buildInsightCandidates(entries) {
     if (avgWalkSleep.length && avgNonWalkSleep.length) {
       const diff = avgWalkSleep.reduce((sum, v) => sum + v, 0) / avgWalkSleep.length - avgNonWalkSleep.reduce((sum, v) => sum + v, 0) / avgNonWalkSleep.length;
       if (diff > 0.4) {
-        candidates.push(`You sleep ${diff.toFixed(1)}h longer on days you walk 20+ min.`);
+        candidates.push(`You sleep ${diff.toFixed(1)}h longer on walk`);
       }
     }
   }
@@ -136,18 +136,29 @@ function buildInsightCandidates(entries) {
 
 function dispatchInsightNotification(title, body, id) {
   if (Capacitor.isNativePlatform()) {
-    LocalNotifications.requestPermissions().then(() => {
-      LocalNotifications.schedule({
-        notifications: [{
-          id,
-          title,
-          body,
-          channelId: "hydration",
-          smallIcon: "ic_stat_notify",
-          sound: "default",
-          schedule: { at: new Date(Date.now() + 1000), allowWhileIdle: true },
-        }],
-      }).catch(() => {});
+    LocalNotifications.requestPermissions().then(async () => {
+      try {
+        const pending = await LocalNotifications.getPending().catch(() => ({ notifications: [] }));
+        const hasSameId = (pending?.notifications || []).some((n) => n.id === id);
+
+        if (hasSameId) {
+          return;
+        }
+
+        await LocalNotifications.schedule({
+          notifications: [{
+            id,
+            title,
+            body,
+            channelId: "hydration",
+            smallIcon: "ic_stat_notify",
+            sound: "default",
+            schedule: { at: new Date(Date.now() + 1000), allowWhileIdle: true },
+          }],
+        });
+      } catch {
+        /* notification silently skipped */
+      }
     }).catch(() => {});
     return;
   }
@@ -161,18 +172,29 @@ function dispatchSundayRecapNotification() {
   const message = "Your week in 20 seconds: small habits are adding up.";
 
   if (Capacitor.isNativePlatform()) {
-    LocalNotifications.requestPermissions().then(() => {
-      LocalNotifications.schedule({
-        notifications: [{
-          id: 5001,
-          title: "Sunday recap",
-          body: message,
-          channelId: "hydration",
-          smallIcon: "ic_stat_notify",
-          sound: "default",
-          schedule: { at: new Date(Date.now() + 1000), allowWhileIdle: true },
-        }],
-      }).catch(() => {});
+    LocalNotifications.requestPermissions().then(async () => {
+      try {
+        const pending = await LocalNotifications.getPending().catch(() => ({ notifications: [] }));
+        const hasSameId = (pending?.notifications || []).some((n) => n.id === 5001);
+
+        if (hasSameId) {
+          return;
+        }
+
+        await LocalNotifications.schedule({
+          notifications: [{
+            id: 5001,
+            title: "Sunday recap",
+            body: message,
+            channelId: "hydration",
+            smallIcon: "ic_stat_notify",
+            sound: "default",
+            schedule: { at: new Date(Date.now() + 1000), allowWhileIdle: true },
+          }],
+        });
+      } catch {
+        /* notification silently skipped */
+      }
     }).catch(() => {});
     return;
   }
@@ -917,6 +939,8 @@ function TrackerApp() {
           "visible"
         ) {
           flushQuickHydrationLogs();
+          void checkInsightNotifications();
+          void checkSundayRecapNotification();
         }
       };
 
@@ -943,6 +967,8 @@ function TrackerApp() {
           state.isActive
         ) {
           flushQuickHydrationLogs();
+          void checkInsightNotifications();
+          void checkSundayRecapNotification();
         }
       }
     )
@@ -1011,6 +1037,8 @@ function TrackerApp() {
 
   }, [
     flushQuickHydrationLogs,
+    checkInsightNotifications,
+    checkSundayRecapNotification,
   ]);
 
 
@@ -1109,12 +1137,28 @@ function TrackerApp() {
       logWaterGlasses,
   });
 
-  useEffect(() => {
+  const checkInsightNotifications = useCallback(async () => {
     if (!userId || !settings?.hydration?.enabled) return;
 
     const todayKey = todayStr();
     const state = JSON.parse(localStorage.getItem(INSIGHT_REMINDER_KEY) || "{}") || {};
-    if (state.date === todayKey) return;
+
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const pending = await LocalNotifications.getPending().catch(() => ({ notifications: [] }));
+        const hasInsightPending = (pending?.notifications || []).some(
+          (n) => n.id >= 4000 && n.id < 5000
+        );
+
+        if (state.date === todayKey && hasInsightPending) {
+          return;
+        }
+      } catch {
+        /* fallback below will still attempt to send */
+      }
+    } else if (state.date === todayKey) {
+      return;
+    }
 
     const insights = buildInsightCandidates(entries);
     if (!insights.length) return;
@@ -1128,14 +1172,29 @@ function TrackerApp() {
     localStorage.setItem(INSIGHT_REMINDER_KEY, JSON.stringify({ date: todayKey, insights: picks }));
   }, [entries, settings, userId]);
 
-  useEffect(() => {
+  const checkSundayRecapNotification = useCallback(async () => {
     if (!userId) return;
 
     const today = new Date();
     const todayKey = todayStr();
     const sundayState = JSON.parse(localStorage.getItem(SUNDAY_RECAP_KEY) || "{}") || {};
 
-    if (today.getDay() !== 0 || sundayState.date === todayKey) return;
+    if (today.getDay() !== 0) return;
+
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const pending = await LocalNotifications.getPending().catch(() => ({ notifications: [] }));
+        const hasRecapPending = (pending?.notifications || []).some((n) => n.id === 5001);
+
+        if (sundayState.date === todayKey && hasRecapPending) {
+          return;
+        }
+      } catch {
+        /* fallback below will still attempt to send */
+      }
+    } else if (sundayState.date === todayKey) {
+      return;
+    }
 
     const stories = buildInsightCandidates(entries);
     if (!stories.length) return;
@@ -1143,6 +1202,14 @@ function TrackerApp() {
     dispatchSundayRecapNotification();
     localStorage.setItem(SUNDAY_RECAP_KEY, JSON.stringify({ date: todayKey }));
   }, [entries, userId]);
+
+  useEffect(() => {
+    void checkInsightNotifications();
+  }, [checkInsightNotifications]);
+
+  useEffect(() => {
+    void checkSundayRecapNotification();
+  }, [checkSundayRecapNotification]);
 
 
   /* =======================================================

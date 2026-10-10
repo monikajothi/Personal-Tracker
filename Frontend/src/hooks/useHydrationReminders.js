@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { App as CapacitorApp } from "@capacitor/app";
 import { Capacitor } from "@capacitor/core";
 import { LocalNotifications } from "@capacitor/local-notifications";
 import {
@@ -53,7 +54,7 @@ function minutesBetween(a, b) {
 }
 
 
-function buildNextReminderAt(h, remainingMl, cupMl, now = new Date()) {
+export function buildNextReminderAt(h, remainingMl, cupMl, now = new Date()) {
   if (!h || remainingMl <= 0) {
     return null;
   }
@@ -621,7 +622,6 @@ export function useHydrationReminders({
         return;
       }
 
-
       const permission =
         await LocalNotifications.requestPermissions();
 
@@ -844,7 +844,57 @@ export function useHydrationReminders({
     }
 
 
+    async function ensureHydrationReminderExists() {
+      if (!Capacitor.isNativePlatform()) {
+        return;
+      }
+
+      try {
+        const pending =
+          await LocalNotifications.getPending().catch(
+            () => ({ notifications: [] })
+          );
+
+        const hasHydrationNotification =
+          (pending?.notifications || []).some(
+            (n) =>
+              n.id === HYDRATION_REMINDER_ID ||
+              n.id === HYDRATION_SNOOZE_ID ||
+              (n.id >= 2000 && n.id < 3000)
+          );
+
+        if (hasHydrationNotification) {
+          return;
+        }
+      } catch {
+        /* no pending list; continue to reschedule */
+      }
+
+      await scheduleNext();
+    }
+
     scheduleNext();
+
+    let appStateListener = null;
+
+    CapacitorApp.addListener(
+      "appStateChange",
+      async (state) => {
+        if (!state?.isActive || cancelled) {
+          return;
+        }
+
+        try {
+          await ensureHydrationReminderExists();
+        } catch {
+          /* retry next pass */
+        }
+      }
+    )
+      .then((listener) => {
+        appStateListener = listener;
+      })
+      .catch(() => {});
 
     const intervalId = setInterval(() => {
       if (!cancelled) {
@@ -855,6 +905,13 @@ export function useHydrationReminders({
     return () => {
       cancelled = true;
       clearInterval(intervalId);
+
+      if (
+        appStateListener &&
+        typeof appStateListener.remove === "function"
+      ) {
+        appStateListener.remove();
+      }
     };
 
   }, [

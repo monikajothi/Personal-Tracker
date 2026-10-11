@@ -923,6 +923,72 @@ function TrackerApp() {
     );
 
 
+  const checkInsightNotifications = useCallback(async () => {
+    if (!userId || !settings?.hydration?.enabled) return;
+
+    const todayKey = todayStr();
+    const state = JSON.parse(localStorage.getItem(INSIGHT_REMINDER_KEY) || "{}") || {};
+
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const pending = await LocalNotifications.getPending().catch(() => ({ notifications: [] }));
+        const hasInsightPending = (pending?.notifications || []).some(
+          (n) => n.id >= 4000 && n.id < 5000
+        );
+
+        if (state.date === todayKey && hasInsightPending) {
+          return;
+        }
+      } catch {
+        /* fallback below will still attempt to send */
+      }
+    } else if (state.date === todayKey) {
+      return;
+    }
+
+    const insights = buildInsightCandidates(entries);
+    if (!insights.length) return;
+
+    const picks = shuffle(insights).slice(0, 2);
+
+    picks.forEach((text, index) => {
+      dispatchInsightNotification("Insight unlocked", text, 4000 + index);
+    });
+
+    localStorage.setItem(INSIGHT_REMINDER_KEY, JSON.stringify({ date: todayKey, insights: picks }));
+  }, [entries, settings, userId]);
+
+  const checkSundayRecapNotification = useCallback(async () => {
+    if (!userId) return;
+
+    const today = new Date();
+    const todayKey = todayStr();
+    const sundayState = JSON.parse(localStorage.getItem(SUNDAY_RECAP_KEY) || "{}") || {};
+
+    if (today.getDay() !== 0) return;
+
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const pending = await LocalNotifications.getPending().catch(() => ({ notifications: [] }));
+        const hasRecapPending = (pending?.notifications || []).some((n) => n.id === 5001);
+
+        if (sundayState.date === todayKey && hasRecapPending) {
+          return;
+        }
+      } catch {
+        /* fallback below will still attempt to send */
+      }
+    } else if (sundayState.date === todayKey) {
+      return;
+    }
+
+    const stories = buildInsightCandidates(entries);
+    if (!stories.length) return;
+
+    dispatchSundayRecapNotification();
+    localStorage.setItem(SUNDAY_RECAP_KEY, JSON.stringify({ date: todayKey }));
+  }, [entries, userId]);
+
   /* =======================================================
      APP VISIBILITY / RESUME
   ======================================================= */
@@ -1136,72 +1202,6 @@ function TrackerApp() {
     onLogGlasses:
       logWaterGlasses,
   });
-
-  const checkInsightNotifications = useCallback(async () => {
-    if (!userId || !settings?.hydration?.enabled) return;
-
-    const todayKey = todayStr();
-    const state = JSON.parse(localStorage.getItem(INSIGHT_REMINDER_KEY) || "{}") || {};
-
-    if (Capacitor.isNativePlatform()) {
-      try {
-        const pending = await LocalNotifications.getPending().catch(() => ({ notifications: [] }));
-        const hasInsightPending = (pending?.notifications || []).some(
-          (n) => n.id >= 4000 && n.id < 5000
-        );
-
-        if (state.date === todayKey && hasInsightPending) {
-          return;
-        }
-      } catch {
-        /* fallback below will still attempt to send */
-      }
-    } else if (state.date === todayKey) {
-      return;
-    }
-
-    const insights = buildInsightCandidates(entries);
-    if (!insights.length) return;
-
-    const picks = shuffle(insights).slice(0, 2);
-
-    picks.forEach((text, index) => {
-      dispatchInsightNotification("Insight unlocked", text, 4000 + index);
-    });
-
-    localStorage.setItem(INSIGHT_REMINDER_KEY, JSON.stringify({ date: todayKey, insights: picks }));
-  }, [entries, settings, userId]);
-
-  const checkSundayRecapNotification = useCallback(async () => {
-    if (!userId) return;
-
-    const today = new Date();
-    const todayKey = todayStr();
-    const sundayState = JSON.parse(localStorage.getItem(SUNDAY_RECAP_KEY) || "{}") || {};
-
-    if (today.getDay() !== 0) return;
-
-    if (Capacitor.isNativePlatform()) {
-      try {
-        const pending = await LocalNotifications.getPending().catch(() => ({ notifications: [] }));
-        const hasRecapPending = (pending?.notifications || []).some((n) => n.id === 5001);
-
-        if (sundayState.date === todayKey && hasRecapPending) {
-          return;
-        }
-      } catch {
-        /* fallback below will still attempt to send */
-      }
-    } else if (sundayState.date === todayKey) {
-      return;
-    }
-
-    const stories = buildInsightCandidates(entries);
-    if (!stories.length) return;
-
-    dispatchSundayRecapNotification();
-    localStorage.setItem(SUNDAY_RECAP_KEY, JSON.stringify({ date: todayKey }));
-  }, [entries, userId]);
 
   useEffect(() => {
     void checkInsightNotifications();
